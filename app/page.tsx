@@ -18,10 +18,9 @@ export default function Home() {
 
   const runCode = async () => {
     try {
-      // Submit code to Judge0 API
       let code = editorRef.current?.getValue() || '';
       console.log(code);
-      const response = await fetch('http://localhost:3000/api/execute', {
+      const response = await fetch('https://socratic-dsa.vercel.app/api/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,20 +29,20 @@ export default function Home() {
           code: code,
         }),
       });
-  
+
       const result = await response.json();
       setOutput(result.result);
     } catch (error) {
       console.error('Error running code:', error);
     }
   };
-  
+
 
   return (
     <div className='p-10'>
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel>
-          <div className='bg-white p-4 m-2 round'>
+          <div className='bg-white p-4 mx-2 round'>
             <div className="space-y-4 ">
               <h1 className="text-3xl font-bold">Two Sum</h1>
               <p className="text-muted-foreground">
@@ -93,15 +92,15 @@ export default function Home() {
           </div>
         </ResizablePanel>
         <ResizableHandle />
-        <ResizablePanel> 
-         <div className='border-2 border-slate-50 border-solid'>
-         <Editor
-            height="500px"
-            defaultLanguage="javascript"
-            defaultValue="// Write your javascript code here"
-            onMount={(editor) => (editorRef.current = editor)}
-          />
-         </div>
+        <ResizablePanel>
+          <div className='border-2 border-slate-50 border-solid'>
+            <Editor
+              height="500px"
+              defaultLanguage="javascript"
+              defaultValue="// Write your javascript code here"
+              onMount={(editor) => (editorRef.current = editor)}
+            />
+          </div>
           <div className='flex justify-end p-2 gap-2 bg-white m-2'>
             <Button onClick={runCode} variant="secondary">Run Code</Button>
             <Button  >Submit</Button>

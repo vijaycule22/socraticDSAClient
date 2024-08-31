@@ -170,10 +170,10 @@ export default function Home() {
 
   return (
     <div className='p-10'>
-      <div className='flex justify-center'>
+      <div className='flex justify-end'>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline">Open Configuration</Button>
+            <Button variant="outline">Configure</Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="grid gap-4">

@@ -9,33 +9,131 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
+
+
+type language = {
+  name: string;
+  id: string;
+}
+
+interface Judge0Response {
+  stdout: string;
+  time: string;
+  memory: number;
+  stderr: string | null;
+  token: string;
+  compile_output: string | null;
+  message: string | null;
+  status: {
+    id: number;
+    description: string;
+  };
+}
 
 
 export default function Home() {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [output, setOutput] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
+  // const baseURL = 'http://0.0.0.0:2358';
+  const baseURL = 'https://judge0-ce.p.rapidapi.com';
+
+  const [apiKeyInput, setApiKeyInput] = useState<string>('');
+
+  const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKeyInput(event.target.value);
+  };
+
 
   const runCode = async () => {
     try {
-      let code = editorRef.current?.getValue() || '';
-      console.log(code);
-      const response = await fetch('https://socratic-dsa.vercel.app/api/execute', {
+      const code = editorRef.current?.getValue() || '';
+      const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
+
+      const response = await fetch(`${baseURL}/submissions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
+          'x-rapidapi-key': apiKeyInput
         },
         body: JSON.stringify({
-          code: code,
+          source_code: code,
+          language_id: languageId,
+          number_of_runs: null,
+          stdin: "Judge0",
+          expected_output: null,
+          cpu_time_limit: null,
+          cpu_extra_time: null,
+          wall_time_limit: null,
+          memory_limit: null,
+          stack_limit: null,
+          max_processes_and_or_threads: null,
+          enable_per_process_and_thread_time_limit: null,
+          enable_per_process_and_thread_memory_limit: null,
+          max_file_size: null,
+          enable_network: null
         }),
       });
 
       const result = await response.json();
-      setOutput(result.result);
+      //wait for 3 sec and call another api
+      setTimeout(async () => {
+        const response: any = await fetch(`${baseURL}/submissions/${result.token}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
+            'x-rapidapi-key': apiKeyInput
+          },
+        });
+
+        const subResult = await response.json();
+        console.log(subResult);
+        setOutput(subResult.stdout || subResult.stderr || subResult.compile_output || subResult.message);
+        console.log(output);
+      }, 3000)
     } catch (error) {
       console.error('Error running code:', error);
     }
   };
+
+
+  const getLanguages = async () => {
+    try {
+      const response = await fetch('http://0.0.0.0:2358/languages');
+      const data = await response.json();
+      setLanguages(data);
+      if (data.length > 0) {
+        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
+      }
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+    }
+  };
+
+  const handleLanguageChange = (value: any) => {
+    const selectedLang = languages.find((lang: language) => lang.name === value);
+    if (selectedLang) {
+      setSelectedLanguage(selectedLang);
+      console.log('Selected Language:', selectedLang);
+    }
+  };
+
+  useEffect(() => {
+    getLanguages();
+  }, []);
+
 
 
   return (
@@ -94,22 +192,42 @@ export default function Home() {
         <ResizableHandle />
         <ResizablePanel>
           <div className='border-2 border-slate-50 border-solid'>
+            <div className='my-2 mx-1 flex'>
+              <Select onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map((language: language) => (
+                    <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                value={apiKeyInput}
+                onChange={handleApiKeyInputInputChange}
+                placeholder="Set rapidapi api key here"
+              />
+            </div>
+
             <Editor
               height="500px"
               defaultLanguage="javascript"
-              defaultValue="// Write your javascript code here"
+              defaultValue={`// Write your ${selectedLanguage} code here`}
               onMount={(editor) => (editorRef.current = editor)}
             />
           </div>
           <div className='flex justify-end p-2 gap-2 bg-white m-2'>
             <Button onClick={runCode} variant="secondary">Run Code</Button>
-            <Button  >Submit</Button>
+            <Button>Submit</Button>
 
           </div>
-          <div className='bg-white m-2'>
+          <div className='bg-white m-2 p-2'>
             <h3>Output:</h3>
             <pre>{output}</pre>
-          </div></ResizablePanel>
+          </div>
+
+        </ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );

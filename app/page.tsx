@@ -87,8 +87,8 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-rapidapi-host': apiHostInput,
-          'x-rapidapi-key': apiKeyInput
+          // 'x-rapidapi-host': apiHostInput,
+          // 'x-rapidapi-key': apiKeyInput
         },
         body: JSON.stringify({
           source_code: code,
@@ -116,8 +116,8 @@ export default function Home() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'x-rapidapi-host': apiHostInput,
-            'x-rapidapi-key': apiKeyInput
+            // 'x-rapidapi-host': apiHostInput,
+            // 'x-rapidapi-key': apiKeyInput
           },
         });
 
@@ -138,8 +138,8 @@ export default function Home() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-rapidapi-host': apiHostInput,
-          'x-rapidapi-key': apiKeyInput
+          // 'x-rapidapi-host': apiHostInput,
+          // 'x-rapidapi-key': apiKeyInput
         },
       });
       const data = await response.json();

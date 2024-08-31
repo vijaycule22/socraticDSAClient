@@ -17,6 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
+
+
 
 
 
@@ -46,12 +54,23 @@ export default function Home() {
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
   // const baseURL = 'http://0.0.0.0:2358';
-  const baseURL = 'https://judge0-ce.p.rapidapi.com';
+  //const baseURL = 'https://judge0-ce.p.rapidapi.com';
 
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
+  const [apiHostInput, setHostInput] = useState<string>('');
+  const [baseURL, setBaseURL] = useState<string>('');
+
 
   const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setApiKeyInput(event.target.value);
+  };
+
+  const handleHostInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHostInput(event.target.value);
+  };
+
+  const handleBaseURLInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBaseURL(event.target.value);
   };
 
 
@@ -65,7 +84,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
+          'x-rapidapi-host': apiHostInput,
           'x-rapidapi-key': apiKeyInput
         },
         body: JSON.stringify({
@@ -94,7 +113,7 @@ export default function Home() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
+            'x-rapidapi-host': apiHostInput,
             'x-rapidapi-key': apiKeyInput
           },
         });
@@ -112,7 +131,14 @@ export default function Home() {
 
   const getLanguages = async () => {
     try {
-      const response = await fetch(`https://ce.judge0.com//languages`);
+      const response = await fetch(`${baseURL}/languages`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': apiHostInput,
+          'x-rapidapi-key': apiKeyInput
+        },
+      });
       const data = await response.json();
       setLanguages(data);
       if (data.length > 0) {
@@ -131,14 +157,71 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
+  const handleConfDoneBtnClick = () => {
+    console.log('Configuration Done');
     getLanguages();
+  };
+
+  useEffect(() => {
+
   }, []);
 
 
 
   return (
     <div className='p-10'>
+      <div className='flex justify-center'>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">Open Configuration</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <h4 className="font-medium leading-none">rapid api</h4>
+                <p className="text-sm text-muted-foreground">
+                  Set the required fields.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center gap-4">
+                  <Label className='w-44' htmlFor="height">Base URL</Label>
+                  <Input
+                    value={baseURL}
+                    onChange={handleBaseURLInputChange}
+                    placeholder="Set base url here"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className='w-44' htmlFor="width">rapid API key</Label>
+                  <Input
+                    value={apiKeyInput}
+                    onChange={handleApiKeyInputInputChange}
+                    placeholder="Set rapidapi api key here"
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Label className='w-44' htmlFor="maxWidth">rapid API Host</Label>
+                  <Input
+                    value={apiHostInput}
+                    onChange={handleHostInputInputChange}
+                    placeholder="Set rapidapi Api Host here"
+                  />
+                </div>
+
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  className="w-24 "
+                  onClick={handleConfDoneBtnClick}
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel>
           <div className='bg-white p-4 mx-2 round'>
@@ -204,11 +287,9 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
-              <Input
-                value={apiKeyInput}
-                onChange={handleApiKeyInputInputChange}
-                placeholder="Set rapidapi api key here"
-              />
+
+
+
             </div>
 
             <Editor

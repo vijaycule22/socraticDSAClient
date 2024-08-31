@@ -131,6 +131,61 @@ export default function Home() {
     }
   };
 
+  // const runCode = async () => {
+  //   try {
+  //     setOutput([]);
+  //     const code = editorRef.current?.getValue() || '';
+  //     const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
+
+  //     // POST submission using proxy
+  //     const response = await fetch('/api/submissions', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         path: '/submissions',
+  //         source_code: code,
+  //         language_id: languageId,
+  //         number_of_runs: null,
+  //         stdin: "Judge0",
+  //         expected_output: null,
+  //         cpu_time_limit: null,
+  //         cpu_extra_time: null,
+  //         wall_time_limit: null,
+  //         memory_limit: null,
+  //         stack_limit: null,
+  //         max_processes_and_or_threads: null,
+  //         enable_per_process_and_thread_time_limit: null,
+  //         enable_per_process_and_thread_memory_limit: null,
+  //         max_file_size: null,
+  //         enable_network: null
+  //       }),
+  //     });
+
+  //     const result = await response.json();
+
+  //     // Wait for 3 seconds and fetch the result
+  //     setTimeout(async () => {
+  //       const response = await fetch('/api/submissions', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({
+  //           path: `/submissions/${result.token}`
+  //         }),
+  //       });
+
+  //       const subResult = await response.json();
+  //       setOutput(subResult.stdout || subResult.stderr || subResult.compile_output || subResult.message);
+  //     }, 3000);
+  //   } catch (error) {
+  //     console.error('Error running code:', error);
+  //   }
+  // };
+
+
 
   const getLanguages = async () => {
     try {
@@ -142,7 +197,9 @@ export default function Home() {
       //     // 'x-rapidapi-key': apiKeyInput
       //   },
       // });
-      const response = await fetch('/api/proxy')
+
+      //proxy server for http
+      const response = await fetch('/api/languages')
       const data = await response.json();
       setLanguages(data);
       if (data.length > 0) {

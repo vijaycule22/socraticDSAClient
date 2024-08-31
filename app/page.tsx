@@ -23,6 +23,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
+import { Link, Settings } from 'lucide-react';
 
 
 
@@ -53,8 +54,10 @@ export default function Home() {
   const [output, setOutput] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
+
 
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
   const [apiHostInput, setHostInput] = useState<string>('');
@@ -160,6 +163,7 @@ export default function Home() {
   const handleConfDoneBtnClick = () => {
     console.log('Configuration Done');
     getLanguages();
+    setIsPopoverOpen(false); // Close the Popover
   };
 
   useEffect(() => {
@@ -169,148 +173,157 @@ export default function Home() {
 
 
   return (
-    <div className='p-10'>
-      <div className='flex justify-end'>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline">Configure</Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium leading-none">rapid api</h4>
-                <p className="text-sm text-muted-foreground">
-                  Set the required fields.
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center gap-4">
-                  <Label className='w-44' htmlFor="height">Base URL</Label>
-                  <Input
-                    value={baseURL}
-                    onChange={handleBaseURLInputChange}
-                    placeholder="Set base url here"
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <Label className='w-44' htmlFor="width">rapid API key</Label>
-                  <Input
-                    value={apiKeyInput}
-                    onChange={handleApiKeyInputInputChange}
-                    placeholder="Set rapidapi api key here"
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <Label className='w-44' htmlFor="maxWidth">rapid API Host</Label>
-                  <Input
-                    value={apiHostInput}
-                    onChange={handleHostInputInputChange}
-                    placeholder="Set rapidapi Api Host here"
-                  />
-                </div>
+    <div>
+      <header className="flex items-center justify-between bg-background text-foreground p-6 border-b border-input shadow-sm">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Socratic DSA</h1>
+        </div>
+        <nav className="flex items-center gap-4">
 
+          <div className="text-sm font-medium hover:underline underline-offset-4" >
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline"><Settings className='mr-2' size={16} />Configure</Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Rapid Api Configurations</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Set the required fields.
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="flex items-center gap-4">
+                      <Label className='w-44' htmlFor="height">Base URL</Label>
+                      <Input
+                        value={baseURL}
+                        onChange={handleBaseURLInputChange}
+                        placeholder="Set base url here"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Label className='w-44' htmlFor="width">rapid API key</Label>
+                      <Input
+                        value={apiKeyInput}
+                        onChange={handleApiKeyInputInputChange}
+                        placeholder="Set rapidapi api key here"
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Label className='w-44' htmlFor="maxWidth">rapid API Host</Label>
+                      <Input
+                        value={apiHostInput}
+                        onChange={handleHostInputInputChange}
+                        placeholder="Set rapidapi Api Host here"
+                      />
+                    </div>
+
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      className="w-24 "
+                      onClick={handleConfDoneBtnClick}
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </nav>
+      </header>
+      <div className='px-5 py-2'>
+
+
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel>
+            <div className='bg-white p-4 mx-2 round'>
+              <div className="space-y-4 ">
+                <h1 className="text-3xl font-bold">Two Sum</h1>
+                <p className="text-muted-foreground">
+                  Given an array of integers <code>nums</code> and an integer <code>target</code>, return{" "}
+                  <em>
+                    indices of the two numbers such that they add up to <code>target</code>
+                  </em>
+                  .
+                </p>
+                <p className="text-muted-foreground">
+                  You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the{" "}
+                  <em>same element twice</em>.
+                </p>
+                <p className="text-muted-foreground">You can return the answer in any order.</p>
               </div>
-              <div className="flex justify-end">
-                <Button
-                  className="w-24 "
-                  onClick={handleConfDoneBtnClick}
-                >
-                  Done
-                </Button>
+              <div className="mt-4 space-y-4">
+                <h2 className="text-xl font-bold">Example</h2>
+                <div className="bg-muted p-4 rounded-md">
+                  <p className="text-muted-foreground">
+                    <strong>Input:</strong> <code>nums = [2, 7, 11, 15], target = 9</code>
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong>Output:</strong> <code>[0, 1]</code>
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong>Explanation:</strong> Because <code>nums[0] + nums[1] == 9</code>, we return <code>[0, 1]</code>.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 space-y-4">
+                <h2 className="text-xl font-bold">Constraints</h2>
+                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+                  <li>
+                    <code>2 &lt;= nums.length &lt;= 10^4</code>
+                  </li>
+                  <li>
+                    <code>-10^9 &lt;= nums[i] &lt;= 10^9</code>
+                  </li>
+                  <li>
+                    <code>-10^9 &lt;= target &lt;= 10^9</code>
+                  </li>
+                  <li>
+                    <strong>Only one valid answer exists.</strong>
+                  </li>
+                </ul>
               </div>
             </div>
-          </PopoverContent>
-        </Popover>
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel>
+            <div className='border-2 bg-white border-slate-50 border-solid'>
+              <div className='my-2 mx-1 flex'>
+                <Select onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((language: language) => (
+                      <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Editor
+                height="500px"
+                defaultLanguage="javascript"
+                defaultValue={`// Write your ${selectedLanguage} code here`}
+                onMount={(editor) => (editorRef.current = editor)}
+              />
+            </div>
+            <div className='flex justify-end p-2 gap-2 bg-white m-2'>
+              <Button onClick={runCode} variant="secondary">Run Code</Button>
+              <Button>Submit</Button>
+
+            </div>
+            <div className='bg-white m-2 p-2'>
+              <h3>Output:</h3>
+              <pre>{output}</pre>
+            </div>
+
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel>
-          <div className='bg-white p-4 mx-2 round'>
-            <div className="space-y-4 ">
-              <h1 className="text-3xl font-bold">Two Sum</h1>
-              <p className="text-muted-foreground">
-                Given an array of integers <code>nums</code> and an integer <code>target</code>, return{" "}
-                <em>
-                  indices of the two numbers such that they add up to <code>target</code>
-                </em>
-                .
-              </p>
-              <p className="text-muted-foreground">
-                You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the{" "}
-                <em>same element twice</em>.
-              </p>
-              <p className="text-muted-foreground">You can return the answer in any order.</p>
-            </div>
-            <div className="mt-4 space-y-4">
-              <h2 className="text-xl font-bold">Example</h2>
-              <div className="bg-muted p-4 rounded-md">
-                <p className="text-muted-foreground">
-                  <strong>Input:</strong> <code>nums = [2, 7, 11, 15], target = 9</code>
-                </p>
-                <p className="text-muted-foreground">
-                  <strong>Output:</strong> <code>[0, 1]</code>
-                </p>
-                <p className="text-muted-foreground">
-                  <strong>Explanation:</strong> Because <code>nums[0] + nums[1] == 9</code>, we return <code>[0, 1]</code>.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 space-y-4">
-              <h2 className="text-xl font-bold">Constraints</h2>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>
-                  <code>2 &lt;= nums.length &lt;= 10^4</code>
-                </li>
-                <li>
-                  <code>-10^9 &lt;= nums[i] &lt;= 10^9</code>
-                </li>
-                <li>
-                  <code>-10^9 &lt;= target &lt;= 10^9</code>
-                </li>
-                <li>
-                  <strong>Only one valid answer exists.</strong>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel>
-          <div className='border-2 border-slate-50 border-solid'>
-            <div className='my-2 mx-1 flex'>
-              <Select onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((language: language) => (
-                    <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-
-
-            </div>
-
-            <Editor
-              height="500px"
-              defaultLanguage="javascript"
-              defaultValue={`// Write your ${selectedLanguage} code here`}
-              onMount={(editor) => (editorRef.current = editor)}
-            />
-          </div>
-          <div className='flex justify-end p-2 gap-2 bg-white m-2'>
-            <Button onClick={runCode} variant="secondary">Run Code</Button>
-            <Button>Submit</Button>
-
-          </div>
-          <div className='bg-white m-2 p-2'>
-            <h3>Output:</h3>
-            <pre>{output}</pre>
-          </div>
-
-        </ResizablePanel>
-      </ResizablePanelGroup>
     </div>
   );
 }

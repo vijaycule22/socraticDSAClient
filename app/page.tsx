@@ -57,6 +57,7 @@ export default function Home() {
 
   const runCode = async () => {
     try {
+      setOutput([]);
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
 
@@ -111,7 +112,7 @@ export default function Home() {
 
   const getLanguages = async () => {
     try {
-      const response = await fetch('http://0.0.0.0:2358/languages');
+      const response = await fetch(`https://ce.judge0.com//languages`);
       const data = await response.json();
       setLanguages(data);
       if (data.length > 0) {

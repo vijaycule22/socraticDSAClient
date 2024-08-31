@@ -189,17 +189,17 @@ export default function Home() {
 
   const getLanguages = async () => {
     try {
-      // const response = await fetch(`${baseURL}/languages`, {
-      //   method: 'GET',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     // 'x-rapidapi-host': apiHostInput,
-      //     // 'x-rapidapi-key': apiKeyInput
-      //   },
-      // });
+      const response = await fetch(`${baseURL}/languages`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'x-rapidapi-host': apiHostInput,
+          // 'x-rapidapi-key': apiKeyInput
+        },
+      });
 
       //proxy server for http
-      const response = await fetch('/api/languages')
+      // const response = await fetch('/api/languages')
       const data = await response.json();
       setLanguages(data);
       if (data.length > 0) {

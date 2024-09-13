@@ -23,7 +23,33 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
-import { Link, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Link, ListPlus, Settings } from 'lucide-react';
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@/components/ui/menubar"
+
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 
 
@@ -238,12 +264,87 @@ export default function Home() {
           </div>
         </nav>
       </header>
-      <div className='px-5 py-2'>
+      <div className='px-5 py-2 flex'>
+
+        {/* <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger>Problems</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>
+                New Tab <MenubarShortcut>⌘T</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem>New Window</MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem>Share</MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem>Print</MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar> */}
 
 
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel>
-            <div className='bg-white p-4 mx-2 round'>
+            <div className='bg-white p-2 mb-1'>
+              <div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline"><ListPlus className='mr-1' />Problems</Button></SheetTrigger>
+                  <SheetContent side={"left"}>
+                    <SheetHeader>
+                      <SheetTitle>
+                        <h1 className="text-2xl font-bold text-gray-700 mb-6">Problem List</h1>
+                      </SheetTitle>
+                      <div className="bg-white shadow-md rounded-lg py-2 px-3 mb-4">
+                        <div className="flex justify-between">
+                          <div className="text-md font-semibold text-black-600">1. Two Sum</div>
+                          <span className="bg-green-100 text-green-600 text-sm font-medium px-2 py-1 rounded-full">Easy</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white shadow-md rounded-lg py-2 px-3 mb-4">
+                        <div className="flex justify-between">
+                          <div className="text-md font-semibold text-black-600">2. Add Two Numbers</div>
+                          <span className="bg-yellow-100 text-yellow-600 text-sm font-medium px-2 py-1 rounded-full">Medium</span>
+                        </div>
+                      </div>
+                    </SheetHeader>
+                  </SheetContent>
+                </Sheet>
+
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button className='ml-2 mr-1' variant="outline">
+                        <ChevronLeft />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" >
+                      <span>Prev Question</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" >
+                        <ChevronRight />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" >
+                      <span>Next Question</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+
+              </div>
+
+            </div>
+
+            <div className='bg-white p-4  round'>
               <div className="space-y-4 ">
                 <h1 className="text-3xl font-bold">Two Sum</h1>
                 <p className="text-muted-foreground">

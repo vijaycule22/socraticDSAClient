@@ -49,6 +49,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Navbar from './Navbar';
 
 
 
@@ -80,27 +81,40 @@ export default function Home() {
   const [output, setOutput] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [baseURL, setBaseURL] = useState<string>('');
+  const [apiKeyInput, setApiKeyInput] = useState<string>('');
+  const [apiHostInput, setHostInput] = useState<string>('');
+
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
 
 
-  const [apiKeyInput, setApiKeyInput] = useState<string>('');
-  const [apiHostInput, setHostInput] = useState<string>('');
-  const [baseURL, setBaseURL] = useState<string>('');
 
 
-  const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKeyInput(event.target.value);
+
+  const getLanguages = async () => {
+    try {
+      const response = await fetch(`${baseURL}/languages`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': apiHostInput,
+          'x-rapidapi-key': apiKeyInput
+        },
+      });
+
+
+      const data = await response.json();
+      setLanguages(data);
+      if (data.length > 0) {
+        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
+      }
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+    }
   };
 
-  const handleHostInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setHostInput(event.target.value);
-  };
 
-  const handleBaseURLInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBaseURL(event.target.value);
-  };
 
 
   const runCode = async () => {
@@ -158,29 +172,17 @@ export default function Home() {
   };
 
 
+  const apiInput = (event: any) => {
+     console.log(event)
+    setBaseURL(event.data.baseURL);
+    setApiKeyInput(event.data.apiKeyInput);
+    setHostInput(event.data.apiHostInput);
+    getLanguages();
+  }
 
 
-  const getLanguages = async () => {
-    try {
-      const response = await fetch(`${baseURL}/languages`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-rapidapi-host': apiHostInput,
-          'x-rapidapi-key': apiKeyInput
-        },
-      });
 
-
-      const data = await response.json();
-      setLanguages(data);
-      if (data.length > 0) {
-        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
-      }
-    } catch (error) {
-      console.error('Error fetching languages:', error);
-    }
-  };
+ 
 
   const handleLanguageChange = (value: any) => {
     const selectedLang = languages.find((lang: language) => lang.name === value);
@@ -190,11 +192,7 @@ export default function Home() {
     }
   };
 
-  const handleConfDoneBtnClick = () => {
-    console.log('Configuration Done');
-    getLanguages();
-    setIsPopoverOpen(false); // Close the Popover
-  };
+
 
   useEffect(() => {
 
@@ -204,83 +202,11 @@ export default function Home() {
 
   return (
     <div>
-      <header className="flex items-center justify-between bg-background text-foreground p-6 border-b border-input shadow-sm">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">Socratic DSA</h1>
-        </div>
-        <nav className="flex items-center gap-4">
-
-          <div className="text-sm font-medium hover:underline underline-offset-4" >
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline"><Settings className='mr-2' size={16} />Configure</Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium leading-none">Rapid Api Configurations</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Set the required fields.
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="height">Base URL</Label>
-                      <Input
-                        value={baseURL}
-                        onChange={handleBaseURLInputChange}
-                        placeholder="Set base url here"
-                      />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="width">rapid API key</Label>
-                      <Input
-                        value={apiKeyInput}
-                        onChange={handleApiKeyInputInputChange}
-                        placeholder="Set rapidapi api key here"
-                      />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="maxWidth">rapid API Host</Label>
-                      <Input
-                        value={apiHostInput}
-                        onChange={handleHostInputInputChange}
-                        placeholder="Set rapidapi Api Host here"
-                      />
-                    </div>
-
-                  </div>
-                  <div className="flex justify-end">
-                    <Button
-                      className="w-24 "
-                      onClick={handleConfDoneBtnClick}
-                    >
-                      Done
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </nav>
-      </header>
+    
+        <Navbar onApiKeyInputChange={apiInput} />
       <div className='px-5 py-2 flex'>
 
-        {/* <Menubar>
-          <MenubarMenu>
-            <MenubarTrigger>Problems</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>
-                New Tab <MenubarShortcut>⌘T</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem>New Window</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Share</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Print</MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar> */}
+   
 
 
         <ResizablePanelGroup direction="horizontal">

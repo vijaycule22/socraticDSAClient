@@ -107,6 +107,8 @@ export default function Home() {
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
   const [isOpen, setIsOpen] = useState(false);
 
+  const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
+
 
   // Function to dynamically close the sheet
   const closeSheet = () => {
@@ -140,6 +142,7 @@ export default function Home() {
 
   const runCode = async () => {
     try {
+      setShowSkeleton(true);
       setOutput([]);
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
@@ -185,6 +188,7 @@ export default function Home() {
         const subResult = await response.json();
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message);
+        setShowSkeleton(false);
         console.log(output);
       }, 3000)
     } catch (error) {
@@ -525,7 +529,15 @@ export default function Home() {
                 <div className='bg-white p-2 h-full'>
 
                   <h3>Output:</h3>
-                  {outputError?.length > 0 && (
+
+                  {showSkeleton &&
+                    <div>
+                      <Skeleton className="h-[20px] w-[180px] rounded-xl m-2" />
+                      <Skeleton className="h-[150px] w-[full] rounded-xl m-2" />
+                    </div>
+                  }
+
+                  {(outputError?.length > 0 && !showSkeleton) && (
                     <>
                       <Alert variant="destructive" className='mb-4'>
                         <AlertCircle className="h-4 w-4" />
@@ -544,10 +556,11 @@ export default function Home() {
                       </Alert>
                     </>
                   )}
-                  {output?.length > 0 && (<div className='bg-white p-4'>
+                  {(output?.length > 0 && !showSkeleton) && (<div className='bg-white p-4'>
                     <pre>{output}
                     </pre>
                   </div>)}
+
 
 
                 </div>

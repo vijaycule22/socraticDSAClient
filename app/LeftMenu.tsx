@@ -1,0 +1,94 @@
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+import { Menu, Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+
+type Problem = {
+    id: number;
+    title: string;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
+type Props = {
+    problemList: any[];
+    selectedProblem: any;
+    onProblemSelect: (problem: any) => void;
+}
+
+const problems: Problem[] = [
+    { id: 1, title: "Two Sum", difficulty: "Easy" },
+    { id: 2, title: "Add Two Numbers", difficulty: "Medium" },
+    { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium" },
+    { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard" },
+    { id: 5, title: "Longest Palindromic Substring", difficulty: "Medium" },
+    // Add more problems as needed
+]
+
+export default function LeftMenu(props: Props) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+
+    const filteredProblems = props.problemList.filter(problem =>
+        problem.custom_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const closeSheet = () => {
+        console.log('Sheet closed');
+        setIsOpen(false);
+    };
+
+    const onProblemSelectEvent = (problem: any) => {
+        props.onProblemSelect(problem);
+        closeSheet();
+    };
+
+    return (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+                <Button variant="outline">
+                    <Menu className="h-4 w-4 mr-2" />
+                    <span >Toggle problem list</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                    <SheetTitle>Problems</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4 space-y-4">
+                    <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search problems"
+                            className="pl-8"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="h-[calc(100vh-150px)] overflow-y-auto">
+                        {filteredProblems.map((problem, id) => (
+                            <div key={problem.name} className="py-2 border-b">
+                                <div className="flex justify-between items-center gap-3 cursor-pointer">
+                                    <span className={`${props.selectedProblem == problem.name ? 'text-indigo-600' : 'text-black-600'}`} onClick={() => onProblemSelectEvent(problem.name)}>{problem.custom_name}</span>
+                                    <Badge
+                                        variant={problem.difficulty === 'Easy' ? 'secondary' :
+                                            problem.difficulty === 'Medium' ? 'default' : 'destructive'}
+                                    >
+                                        {problem.difficulty}
+                                    </Badge>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+}

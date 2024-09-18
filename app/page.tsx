@@ -56,6 +56,7 @@ import Navbar from './Navbar';
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import ChatPopup from './ChatMenu';
+import LeftMenu from './LeftMenu';
 
 
 
@@ -270,107 +271,57 @@ export default function Home() {
           <ResizablePanel>
 
             <div className='bg-white p-2 mb-1'>
+              <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
+              <TooltipProvider>
 
+                <Tooltip>
+
+                  <TooltipTrigger asChild>
+
+                    <Button className='ml-2 mr-1' variant="outline">
+
+                      <ChevronLeft />
+
+                    </Button>
+
+                  </TooltipTrigger>
+
+                  <TooltipContent side="bottom" >
+
+                    <span>Prev Question</span>
+
+                  </TooltipContent>
+
+                </Tooltip>
+
+              </TooltipProvider>
+
+
+
+              <TooltipProvider>
+
+                <Tooltip>
+
+                  <TooltipTrigger asChild>
+
+                    <Button variant="outline" >
+
+                      <ChevronRight />
+
+                    </Button>
+
+                  </TooltipTrigger>
+
+                  <TooltipContent side="bottom" >
+
+                    <span>Next Question</span>
+
+                  </TooltipContent>
+
+                </Tooltip>
+
+              </TooltipProvider>
               <div>
-
-                <Sheet open={isOpen} onOpenChange={setIsOpen}>
-
-                  <SheetTrigger asChild>
-
-                    <Button variant="outline"><ListPlus className='mr-1' />Problems</Button></SheetTrigger>
-
-                  <SheetContent side={"left"}>
-
-                    <SheetHeader>
-
-                      <SheetTitle>
-
-                        <h1 className="text-2xl font-bold text-gray-700 mb-6">Problem List</h1>
-
-                      </SheetTitle>
-
-
-
-                      {Problems.map((problem: any) => (
-                        <div key={problem.name} className={` shadow-md rounded-lg py-3 px-3 mb-4 cursor-pointer `}>
-
-                          <div className="flex justify-between items-center">
-
-                            <div onClick={() => OnSelectProblem(problem.name)}>
-
-                              <div className={`text-sm font-semibold  ${ProblemCaseStudy?.name == problem.name ? 'text-indigo-600' : 'text-black-600'}`}>
-
-                                {problem.custom_name}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="bg-green-100 text-green-600 text-sm font-medium px-2 py-1 rounded-full">
-
-                                {problem.difficulty}
-
-                              </span>
-                            </div>
-                          </div>
-
-                        </div>
-                      ))}
-
-
-
-                    </SheetHeader>
-
-                  </SheetContent>
-
-                </Sheet>
-                <TooltipProvider>
-
-                  <Tooltip>
-
-                    <TooltipTrigger asChild>
-
-                      <Button className='ml-2 mr-1' variant="outline">
-
-                        <ChevronLeft />
-
-                      </Button>
-
-                    </TooltipTrigger>
-
-                    <TooltipContent side="bottom" >
-
-                      <span>Prev Question</span>
-
-                    </TooltipContent>
-
-                  </Tooltip>
-
-                </TooltipProvider>
-
-
-
-                <TooltipProvider>
-
-                  <Tooltip>
-
-                    <TooltipTrigger asChild>
-
-                      <Button variant="outline" >
-
-                        <ChevronRight />
-
-                      </Button>
-
-                    </TooltipTrigger>
-
-                    <TooltipContent side="bottom" >
-
-                      <span>Next Question</span>
-
-                    </TooltipContent>
-
-                  </Tooltip>
-
-                </TooltipProvider>
               </div>
             </div>
 
@@ -380,7 +331,7 @@ export default function Home() {
 
                 <div className="space-y-4 ">
 
-                  <h1 className="text-3xl font-bold">{ProblemCaseStudy?.custom_name}</h1>
+                  <h1 className="text-2xl font-bold">{ProblemCaseStudy?.custom_name}</h1>
 
                   <p className="text-muted-foreground"><em>{ProblemCaseStudy?.description}</em></p>
 

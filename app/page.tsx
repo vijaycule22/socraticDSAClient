@@ -16,35 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Label } from "@/components/ui/label"
-import { AlertCircle, Brain, ChevronLeft, ChevronRight, Link, ListPlus, Settings, Terminal } from 'lucide-react';
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarTrigger,
-} from "@/components/ui/menubar"
+
+
+import { AlertCircle, Brain, ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 import { Skeleton } from "@/components/ui/skeleton"
 
-
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 
 import {
   Tooltip,
@@ -57,10 +35,6 @@ import Navbar from './Navbar';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import ChatPopup from './ChatMenu';
 import LeftMenu from './LeftMenu';
-
-
-
-
 
 
 
@@ -270,7 +244,7 @@ export default function Home() {
 
           <ResizablePanel>
 
-            <div className='bg-white p-2 mb-1'>
+            <div className='bg-white p-2 mb-1 flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
               <TooltipProvider>
 

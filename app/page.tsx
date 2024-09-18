@@ -34,6 +34,9 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 
+import { Skeleton } from "@/components/ui/skeleton"
+
+
 import {
   Sheet,
   SheetContent,
@@ -434,9 +437,24 @@ export default function Home() {
               </div>
 
             ) : (
+              <div className='bg-white p-4  round h-full'>
 
-              <p>No case studies available</p>
+                <Skeleton className="h-[40px] w-[80%] rounded-xl mb-4" />
+                <Skeleton className="h-[15px] w-[50%] rounded-xl mb-1" />
+                <Skeleton className="h-[15px] w-[50%] rounded-xl mb-6" />
 
+                <Skeleton className="h-[30px] w-[100px] rounded-xl mb-4" />
+
+                <Skeleton className="h-[120px] w-full rounded-xl mb-2" />
+                <Skeleton className="h-[120px] w-full rounded-xl mb-4" />
+
+                <Skeleton className="h-[30px] w-[100px] rounded-xl mb-2" />
+                <Skeleton className="h-[16px] w-[250px] rounded-xl mb-4" />
+                <Skeleton className="h-[16px] w-[250px] rounded-xl mb-4" />
+                <Skeleton className="h-[16px] w-[250px] rounded-xl mb-4" />
+                <Skeleton className="h-[16px] w-[250px] rounded-xl mb-4" />
+
+              </div>
             )}
 
 

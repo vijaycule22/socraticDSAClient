@@ -1,0 +1,30 @@
+{
+    "data": [
+        {
+            "stdout": "hell from js\n",
+            "time": "0.022",
+            "memory": 7132,
+            "stderr": null,
+            "token": "92f72ac3-e2e3-44f8-a1f3-40474638509a",
+            "compile_output": null,
+            "message": null,
+            "status": {
+                "id": 3,
+                "description": "Accepted"
+            }
+        },
+        {
+            "stdout": null,
+            "time": "0.028",
+            "memory": 7432,
+            "stderr": "/box/script.js:1\nconsole.logs('hell from js')\n        ^\n\nTypeError: console.logs is not a function\n    at Object.\u003canonymous\u003e (/box/script.js:1:9)\n    at Module._compile (internal/modules/cjs/loader.js:959:30)\n    at Object.Module._extensions..js (internal/modules/cjs/loader.js:995:10)\n    at Module.load (internal/modules/cjs/loader.js:815:32)\n    at Function.Module._load (internal/modules/cjs/loader.js:727:14)\n    at Function.Module.runMain (internal/modules/cjs/loader.js:1047:10)\n    at internal/main/run_main_module.js:17:11\n",
+            "token": "60027de9-5542-4c1e-90bc-f9ec5ad4fa2c",
+            "compile_output": null,
+            "message": "Exited with error status 1",
+            "status": {
+                "id": 11,
+                "description": "Runtime Error (NZEC)"
+            }
+        }
+    ]
+}

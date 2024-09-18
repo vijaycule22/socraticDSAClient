@@ -23,7 +23,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
-import { ChevronLeft, ChevronRight, Link, ListPlus, Settings } from 'lucide-react';
+import { AlertCircle, Brain, ChevronLeft, ChevronRight, Link, ListPlus, Settings, Terminal } from 'lucide-react';
 import {
   Menubar,
   MenubarContent,
@@ -49,6 +49,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Navbar from './Navbar';
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import ChatPopup from './ChatMenu';
+
 
 
 
@@ -74,33 +79,60 @@ interface Judge0Response {
   };
 }
 
+interface CaseStudy {
+  name: string,
+  custom_name: string,
+  difficulty: string,
+  description: string,
+  examples: [],
+  constraints: []
+}
+
 
 export default function Home() {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [output, setOutput] = useState([]);
+  const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState<string>('7006c9c5b7msh60296f977a3f028p100fc6jsnde78de91aa45');
+  const [apiHostInput, setHostInput] = useState<string>('judge0-ce.p.rapidapi.com');
+  const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
+  const [Problems, setProblem] = useState([]);
+  const [ProblemCaseStudy, setProblemCaseStudy] = useState<CaseStudy>();
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
+  const [isOpen, setIsOpen] = useState(false);
 
 
-  const [apiKeyInput, setApiKeyInput] = useState<string>('');
-  const [apiHostInput, setHostInput] = useState<string>('');
-  const [baseURL, setBaseURL] = useState<string>('');
-
-
-  const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKeyInput(event.target.value);
+  // Function to dynamically close the sheet
+  const closeSheet = () => {
+    console.log('Sheet closed');
+    setIsOpen(false);
   };
 
-  const handleHostInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setHostInput(event.target.value);
+
+  const getLanguages = async () => {
+    try {
+      const response = await fetch(`${baseURL}/languages`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': apiHostInput,
+          'x-rapidapi-key': apiKeyInput
+        },
+      });
+      const data = await response.json();
+      setLanguages(data);
+      if (data.length > 0) {
+        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
+      }
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+    }
   };
 
-  const handleBaseURLInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBaseURL(event.target.value);
-  };
+
 
 
   const runCode = async () => {
@@ -148,8 +180,8 @@ export default function Home() {
         });
 
         const subResult = await response.json();
-        console.log(subResult);
-        setOutput(subResult.stdout || subResult.stderr || subResult.compile_output || subResult.message);
+        setOutput(subResult.stdout);
+        setOutputError(subResult.stderr || subResult.message);
         console.log(output);
       }, 3000)
     } catch (error) {
@@ -157,30 +189,13 @@ export default function Home() {
     }
   };
 
-
-
-
-  const getLanguages = async () => {
-    try {
-      const response = await fetch(`${baseURL}/languages`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-rapidapi-host': apiHostInput,
-          'x-rapidapi-key': apiKeyInput
-        },
-      });
-
-
-      const data = await response.json();
-      setLanguages(data);
-      if (data.length > 0) {
-        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
-      }
-    } catch (error) {
-      console.error('Error fetching languages:', error);
-    }
-  };
+  const apiInput = (event: any) => {
+    console.log(event)
+    setBaseURL(event.data.baseURL);
+    setApiKeyInput(event.data.apiKeyInput);
+    setHostInput(event.data.apiHostInput);
+    getLanguages();
+  }
 
   const handleLanguageChange = (value: any) => {
     const selectedLang = languages.find((lang: language) => lang.name === value);
@@ -190,245 +205,344 @@ export default function Home() {
     }
   };
 
-  const handleConfDoneBtnClick = () => {
-    console.log('Configuration Done');
-    getLanguages();
-    setIsPopoverOpen(false); // Close the Popover
+
+  const GetProblemList = async () => {
+    try {
+      const response = await fetch(`https://socraticdsa-server.onrender.com/fetch-all-problems`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+      const data = await response.json();
+      setProblem(data);
+      console.log("problems:" + data)
+
+      OnSelectProblem(data[0].name);
+    } catch (error) {
+      console.error('Error fetching ProblemsList:', error);
+    }
   };
 
-  useEffect(() => {
+  const OnSelectProblem = async (problemName: string) => {
+    try {
+      console.log("Problem name:", problemName);
+      const response = await fetch(`https://socraticdsa-server.onrender.com/problems/${problemName}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setProblemCaseStudy(data);
+      closeSheet();
 
+      console.log("Problem details:", ProblemCaseStudy);
+    } catch (error) {
+      console.error('Error fetching problem details:', error);
+    }
+  };
+
+
+  useEffect(() => {
+    GetProblemList();
   }, []);
 
 
 
   return (
     <div>
-      <header className="flex items-center justify-between bg-background text-foreground p-6 border-b border-input shadow-sm">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">Socratic DSA</h1>
-        </div>
-        <nav className="flex items-center gap-4">
 
-          <div className="text-sm font-medium hover:underline underline-offset-4" >
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline"><Settings className='mr-2' size={16} />Configure</Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium leading-none">Rapid Api Configurations</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Set the required fields.
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="height">Base URL</Label>
-                      <Input
-                        value={baseURL}
-                        onChange={handleBaseURLInputChange}
-                        placeholder="Set base url here"
-                      />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="width">rapid API key</Label>
-                      <Input
-                        value={apiKeyInput}
-                        onChange={handleApiKeyInputInputChange}
-                        placeholder="Set rapidapi api key here"
-                      />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Label className='w-44' htmlFor="maxWidth">rapid API Host</Label>
-                      <Input
-                        value={apiHostInput}
-                        onChange={handleHostInputInputChange}
-                        placeholder="Set rapidapi Api Host here"
-                      />
-                    </div>
-
-                  </div>
-                  <div className="flex justify-end">
-                    <Button
-                      className="w-24 "
-                      onClick={handleConfDoneBtnClick}
-                    >
-                      Done
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </nav>
-      </header>
-      <div className='px-5 py-2 flex'>
-
-        {/* <Menubar>
-          <MenubarMenu>
-            <MenubarTrigger>Problems</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>
-                New Tab <MenubarShortcut>⌘T</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem>New Window</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Share</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Print</MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar> */}
-
-
+      <Navbar onApiKeyInputChange={apiInput} />
+      <div className='px-5 py-2 flex body-height'>
         <ResizablePanelGroup direction="horizontal">
+
           <ResizablePanel>
+
             <div className='bg-white p-2 mb-1'>
+
               <div>
-                <Sheet>
+
+                <Sheet open={isOpen} onOpenChange={setIsOpen}>
+
                   <SheetTrigger asChild>
+
                     <Button variant="outline"><ListPlus className='mr-1' />Problems</Button></SheetTrigger>
+
                   <SheetContent side={"left"}>
+
                     <SheetHeader>
+
                       <SheetTitle>
+
                         <h1 className="text-2xl font-bold text-gray-700 mb-6">Problem List</h1>
+
                       </SheetTitle>
-                      <div className="bg-white shadow-md rounded-lg py-2 px-3 mb-4">
-                        <div className="flex justify-between">
-                          <div className="text-md font-semibold text-black-600">1. Two Sum</div>
-                          <span className="bg-green-100 text-green-600 text-sm font-medium px-2 py-1 rounded-full">Easy</span>
-                        </div>
-                      </div>
 
-                      <div className="bg-white shadow-md rounded-lg py-2 px-3 mb-4">
-                        <div className="flex justify-between">
-                          <div className="text-md font-semibold text-black-600">2. Add Two Numbers</div>
-                          <span className="bg-yellow-100 text-yellow-600 text-sm font-medium px-2 py-1 rounded-full">Medium</span>
+
+
+                      {Problems.map((problem: any) => (
+                        <div key={problem.name} className={` shadow-md rounded-lg py-3 px-3 mb-4 cursor-pointer `}>
+
+                          <div className="flex justify-between items-center">
+
+                            <div onClick={() => OnSelectProblem(problem.name)}>
+
+                              <div className={`text-sm font-semibold  ${ProblemCaseStudy?.name == problem.name ? 'text-indigo-600' : 'text-black-600'}`}>
+
+                                {problem.custom_name}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="bg-green-100 text-green-600 text-sm font-medium px-2 py-1 rounded-full">
+
+                                {problem.difficulty}
+
+                              </span>
+                            </div>
+                          </div>
+
                         </div>
-                      </div>
+                      ))}
+
+
+
                     </SheetHeader>
+
                   </SheetContent>
+
                 </Sheet>
-
-
                 <TooltipProvider>
+
                   <Tooltip>
+
                     <TooltipTrigger asChild>
+
                       <Button className='ml-2 mr-1' variant="outline">
+
                         <ChevronLeft />
+
                       </Button>
+
                     </TooltipTrigger>
+
                     <TooltipContent side="bottom" >
+
                       <span>Prev Question</span>
+
                     </TooltipContent>
+
                   </Tooltip>
+
                 </TooltipProvider>
+
+
 
                 <TooltipProvider>
+
                   <Tooltip>
+
                     <TooltipTrigger asChild>
+
                       <Button variant="outline" >
+
                         <ChevronRight />
+
                       </Button>
+
                     </TooltipTrigger>
+
                     <TooltipContent side="bottom" >
+
                       <span>Next Question</span>
+
                     </TooltipContent>
+
                   </Tooltip>
+
                 </TooltipProvider>
-
-
               </div>
-
             </div>
 
-            <div className='bg-white p-4  round'>
-              <div className="space-y-4 ">
-                <h1 className="text-3xl font-bold">Two Sum</h1>
-                <p className="text-muted-foreground">
-                  Given an array of integers <code>nums</code> and an integer <code>target</code>, return{" "}
-                  <em>
-                    indices of the two numbers such that they add up to <code>target</code>
-                  </em>
-                  .
-                </p>
-                <p className="text-muted-foreground">
-                  You may assume that each input would have <strong>exactly one solution</strong>, and you may not use the{" "}
-                  <em>same element twice</em>.
-                </p>
-                <p className="text-muted-foreground">You can return the answer in any order.</p>
-              </div>
-              <div className="mt-4 space-y-4">
-                <h2 className="text-xl font-bold">Example</h2>
-                <div className="bg-muted p-4 rounded-md">
-                  <p className="text-muted-foreground">
-                    <strong>Input:</strong> <code>nums = [2, 7, 11, 15], target = 9</code>
-                  </p>
-                  <p className="text-muted-foreground">
-                    <strong>Output:</strong> <code>[0, 1]</code>
-                  </p>
-                  <p className="text-muted-foreground">
-                    <strong>Explanation:</strong> Because <code>nums[0] + nums[1] == 9</code>, we return <code>[0, 1]</code>.
-                  </p>
+            {ProblemCaseStudy != null ? (
+
+              <div className='bg-white p-4  round h-full' key={ProblemCaseStudy?.name}>
+
+                <div className="space-y-4 ">
+
+                  <h1 className="text-3xl font-bold">{ProblemCaseStudy?.custom_name}</h1>
+
+                  <p className="text-muted-foreground"><em>{ProblemCaseStudy?.description}</em></p>
+
                 </div>
+
+                <div className="mt-4 space-y-4">
+
+                  <h2 className="text-xl font-bold">Example</h2>
+
+                  {ProblemCaseStudy.examples.map((example: any, id) => (
+
+                    <div key={id} className="bg-muted p-4 rounded-md">
+
+                      <p className="text-muted-foreground">
+
+                        <strong>Input:</strong><code>{example.input}</code>
+
+                      </p>
+
+                      <p className="text-muted-foreground">
+
+                        <strong>Output:</strong> <code>{example.output}</code>
+
+                      </p>
+
+                      <p className="text-muted-foreground">
+
+                        <strong>Explanation:</strong> {example.explanation}
+
+                      </p>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+                <div className="mt-4 space-y-4">
+
+                  <h2 className="text-xl font-bold">Constraints</h2>
+
+                  {ProblemCaseStudy.constraints.map((constraints: any, id) => (
+
+                    <ul key={id} className="list-disc pl-6 space-y-2 text-muted-foreground">
+
+                      <li>
+
+                        <code>{constraints}</code>
+
+                      </li>
+
+                    </ul>
+
+                  ))}
+
+                </div>
+
               </div>
-              <div className="mt-4 space-y-4">
-                <h2 className="text-xl font-bold">Constraints</h2>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                  <li>
-                    <code>2 &lt;= nums.length &lt;= 10^4</code>
-                  </li>
-                  <li>
-                    <code>-10^9 &lt;= nums[i] &lt;= 10^9</code>
-                  </li>
-                  <li>
-                    <code>-10^9 &lt;= target &lt;= 10^9</code>
-                  </li>
-                  <li>
-                    <strong>Only one valid answer exists.</strong>
-                  </li>
-                </ul>
-              </div>
-            </div>
+
+            ) : (
+
+              <p>No case studies available</p>
+
+            )}
+
+
+
           </ResizablePanel>
+
           <ResizableHandle />
+
           <ResizablePanel>
-            <div className='border-2 bg-white border-slate-50 border-solid'>
-              <div className='my-2 mx-1 flex'>
-                <Select onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((language: language) => (
-                      <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <ResizablePanelGroup direction="vertical">
+              <ResizablePanel>
+
+
+                <div className='border-2 bg-white border-slate-50 border-solid'>
+
+                  <div className='my-2 mx-1 flex'>
+
+                    <Select onValueChange={handleLanguageChange}>
+
+                      <SelectTrigger className="w-[180px]">
+
+                        <SelectValue placeholder="Select Language" />
+
+                      </SelectTrigger>
+
+                      <SelectContent>
+
+                        {languages.map((language: language) => (
+
+                          <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
+
+                        ))}
+
+                      </SelectContent>
+
+                    </Select>
+
+                  </div>
+
+
+
+                  <Editor
+
+                    height="500px"
+
+                    defaultLanguage="javascript"
+
+                    defaultValue={`// Write your ${selectedLanguage} code here`}
+
+                    onMount={(editor) => (editorRef.current = editor)} />
+
+                </div>
+
+
+              </ResizablePanel>
+              <ResizableHandle />
+              <div className='flex justify-end p-2 gap-2 bg-white mb-1'>
+
+                <Button onClick={runCode} variant="secondary">Run Code</Button>
+
+                <Button>Submit</Button>
+
+
+
               </div>
 
-              <Editor
-                height="500px"
-                defaultLanguage="javascript"
-                defaultValue={`// Write your ${selectedLanguage} code here`}
-                onMount={(editor) => (editorRef.current = editor)}
-              />
-            </div>
-            <div className='flex justify-end p-2 gap-2 bg-white m-2'>
-              <Button onClick={runCode} variant="secondary">Run Code</Button>
-              <Button>Submit</Button>
+              <ResizablePanel>
+                <div className='bg-white p-2 h-full'>
 
-            </div>
-            <div className='bg-white m-2 p-2'>
-              <h3>Output:</h3>
-              <pre>{output}</pre>
-            </div>
+                  <h3>Output:</h3>
+                  {outputError?.length > 0 && (
+                    <>
+                      <Alert variant="destructive" className='mb-4'>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                          <pre>{outputError}</pre>
+                        </AlertDescription>
+                      </Alert>
+
+                      <Alert>
+                        <Brain className="h-4 w-4" />
+                        <AlertTitle>AI Help!</AlertTitle>
+                        <AlertDescription>
+                          To fix the error, change console.logs
+                        </AlertDescription>
+                      </Alert>
+                    </>
+                  )}
+                  {output?.length > 0 && (<div className='bg-white p-4'>
+                    <pre>{output}
+                    </pre>
+                  </div>)}
+
+
+                </div>
+              </ResizablePanel>
+
+            </ResizablePanelGroup>
 
           </ResizablePanel>
+
         </ResizablePanelGroup>
       </div>
+
+      <ChatPopup />
     </div>
   );
 }

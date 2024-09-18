@@ -45,7 +45,7 @@ const Navbar = (props: Props) => {
 
 
   return (
-    <header className="flex items-center justify-between bg-background text-foreground p-6 border-b border-input shadow-sm">
+    <header className="flex items-center justify-between bg-background text-foreground p-4 border-b border-input shadow-sm">
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold">Socratic DSA</h1>
       </div>

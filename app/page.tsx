@@ -35,6 +35,7 @@ import Navbar from './Navbar';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import ChatPopup from './ChatMenu';
 import LeftMenu from './LeftMenu';
+import { CodeBlock } from './CodeBlock';
 
 
 
@@ -83,6 +84,11 @@ export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
 
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
+  const sampleCode = `
+  function sayHello() {
+    console.log('Hello, world!');
+  }
+`;
 
 
   // Function to dynamically close the sheet
@@ -476,7 +482,10 @@ export default function Home() {
                         <Brain className="h-4 w-4" />
                         <AlertTitle>AI Help!</AlertTitle>
                         <AlertDescription>
-                          To fix the error, change console.logs
+                        <div>
+                          Team Name
+                        </div>
+                          <CodeBlock code={sampleCode} language="javascript" />
                         </AlertDescription>
                       </Alert>
                     </>

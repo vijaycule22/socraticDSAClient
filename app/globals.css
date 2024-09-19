@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'prismjs/themes/prism-tomorrow.css';
+
 
 
 @layer base {
@@ -66,5 +68,5 @@ body{
 }
 
 .body-height{
-  height: calc(100vh - 89px);
+  min-height: calc(100vh - 89px);
 }

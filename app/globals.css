@@ -68,5 +68,5 @@ body{
 }
 
 .body-height{
-  min-height: calc(100vh - 89px);
+  height: calc(100vh - 89px);
 }

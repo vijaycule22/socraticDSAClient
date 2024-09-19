@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
+import axios from 'axios';
 
 import Editor from '@monaco-editor/react';
 import {
@@ -84,11 +85,29 @@ export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
 
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
+  const [text_output, setTextOutput] = useState<string>('');
+  const [code_output, setCodeOutput] = useState<string>('');
+
   const sampleCode = `
   function sayHello() {
     console.log('Hello, world!');
   }
 `;
+
+  const errorRequest =
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an AI assistant focused on teaching Data Structures and Algorithms, particularly sorting algorithms, using the Socratic method. Guide students to discover solutions through insightful, context-aware questioning rather than direct answers. Provide real-time feedback based on their code execution, personalize guidance to their understanding level, and encourage exploration and reflection. Always be patient, supportive, and focused on deepening their understanding through guided discovery."
+      },
+      {
+        "role": "user",
+        "content": "File \"script.py\", line 1\n    name = input(@@@#$)\n                 ^\nSyntaxError: invalid syntax\n"
+      }
+    ]
+  }
+  
 
 
   // Function to dynamically close the sheet
@@ -169,6 +188,11 @@ export default function Home() {
         const subResult = await response.json();
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message);
+        if(outputError?.length > 0){
+          console.log(outputError);
+          errorRequest.messages[1].content = String(outputError);
+          openApiChat(errorRequest);
+        }
         setShowSkeleton(false);
         console.log(output);
       }, 3000)
@@ -192,6 +216,19 @@ export default function Home() {
       console.log('Selected Language:', selectedLang);
     }
   };
+
+  const openApiChat = async (errorRequest: any) => {
+   try{
+    const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
+    console.log(res.data);
+    setTextOutput(res.data.text_output);
+    setCodeOutput(res.data.code_output);
+   }
+    catch(error){
+      console.log(error);
+    }
+
+  }
 
 
   const GetProblemList = async () => {
@@ -483,9 +520,9 @@ export default function Home() {
                         <AlertTitle>AI Help!</AlertTitle>
                         <AlertDescription>
                         <div>
-                          Team Name
+                          {text_output}
                         </div>
-                          <CodeBlock code={sampleCode} language="javascript" />
+                         {code_output && <CodeBlock code={code_output} language="python" />} 
                         </AlertDescription>
                       </Alert>
                     </>

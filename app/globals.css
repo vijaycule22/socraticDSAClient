@@ -70,3 +70,8 @@ body{
 .body-height{
   height: calc(100vh - 89px);
 }
+
+.scroll-height{
+  height: calc(100vh - 166px);
+  overflow: auto;
+}

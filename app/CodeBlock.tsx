@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript'; // Import language support (you can import other languages as needed)
+import 'prismjs/components/prism-python';
 import 'prismjs/themes/prism-tomorrow.css'; // Load the theme
 
 interface CodeBlockProps {
@@ -8,7 +9,7 @@ interface CodeBlockProps {
   language?: string;
 }
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ code, language = 'javascript' }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ code, language = 'python' }) => {
   useEffect(() => {
     Prism.highlightAll(); // Automatically highlight the code on load
   }, []);

@@ -107,7 +107,7 @@ export default function Home() {
       }
     ]
   }
-  
+
 
 
   // Function to dynamically close the sheet
@@ -188,7 +188,7 @@ export default function Home() {
         const subResult = await response.json();
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message);
-        if(outputError?.length > 0){
+        if (outputError?.length > 0) {
           console.log(outputError);
           errorRequest.messages[1].content = String(outputError);
           openApiChat(errorRequest);
@@ -218,13 +218,13 @@ export default function Home() {
   };
 
   const openApiChat = async (errorRequest: any) => {
-   try{
-    const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
-    console.log(res.data);
-    setTextOutput(res.data.text_output);
-    setCodeOutput(res.data.code_output);
-   }
-    catch(error){
+    try {
+      const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
+      console.log(res.data);
+      setTextOutput(res.data.text_output);
+      setCodeOutput(res.data.code_output);
+    }
+    catch (error) {
       console.log(error);
     }
 
@@ -285,7 +285,7 @@ export default function Home() {
       <div className='px-5 py-2 flex body-height'>
         <ResizablePanelGroup direction="horizontal">
 
-          <ResizablePanel>
+          <ResizablePanel className='mr-2'>
 
             <div className='bg-white p-2 mb-1 flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
@@ -344,7 +344,7 @@ export default function Home() {
 
             {ProblemCaseStudy != null ? (
 
-              <div className='bg-white p-4  round h-full' key={ProblemCaseStudy?.name}>
+              <div className='bg-white p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
 
                 <div className="space-y-4 ">
 
@@ -437,7 +437,7 @@ export default function Home() {
 
           <ResizablePanel>
             <ResizablePanelGroup direction="vertical">
-              <ResizablePanel>
+              <ResizablePanel className='mb-2' >
 
 
                 <div className='border-2 bg-white border-slate-50 border-solid'>
@@ -469,13 +469,10 @@ export default function Home() {
 
 
                   <Editor
-
                     height="500px"
-
                     defaultLanguage="javascript"
-
+                    theme='vs-dark'
                     defaultValue={`// Write your ${selectedLanguage} code here`}
-
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -519,10 +516,10 @@ export default function Home() {
                         <Brain className="h-4 w-4" />
                         <AlertTitle>AI Help!</AlertTitle>
                         <AlertDescription>
-                        <div>
-                          {text_output}
-                        </div>
-                         {code_output && <CodeBlock code={code_output} language="python" />} 
+                          <div>
+                            {text_output}
+                          </div>
+                          {code_output && <CodeBlock code={code_output} language="python" />}
                         </AlertDescription>
                       </Alert>
                     </>

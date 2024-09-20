@@ -283,7 +283,7 @@ export default function Home() {
     <div>
 
       <Navbar onApiKeyInputChange={apiInput} />
-      <div className='px-5 py-2 flex body-height'>
+      <div className='px-3 py-1 flex body-height'>
         <ResizablePanelGroup direction="horizontal">
 
           <ResizablePanel className='mr-2'>

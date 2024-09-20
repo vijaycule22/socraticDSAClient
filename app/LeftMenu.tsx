@@ -53,7 +53,7 @@ export default function LeftMenu(props: Props) {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <Button variant="outline">
+                <Button variant="ghost" className='text-muted-foreground'>
                     <Menu className="h-5 w-5 mr-2" />
                     <span >Toggle problem list</span>
                 </Button>
@@ -76,7 +76,7 @@ export default function LeftMenu(props: Props) {
                         {filteredProblems.map((problem, id) => (
                             <div key={problem.name} className="py-2 border-b">
                                 <div className="flex justify-between items-center gap-3 cursor-pointer">
-                                    <span className={`${props.selectedProblem == problem.name ? 'text-indigo-600' : 'text-black-600'}`} onClick={() => onProblemSelectEvent(problem.name)}>{id + 1}. {problem.custom_name}</span>
+                                    <span className={`${props.selectedProblem == problem.name ? 'text-indigo-600' : 'text-muted-foreground'}`} onClick={() => onProblemSelectEvent(problem.name)}>{id + 1}. {problem.custom_name}</span>
                                     <Badge
                                         variant={problem.difficulty === 'Easy' ? 'secondary' :
                                             problem.difficulty === 'Medium' ? 'default' : 'destructive'}

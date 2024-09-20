@@ -3,7 +3,7 @@ import { Popover, PopoverTrigger, PopoverContent, PopoverPortal } from "@radix-u
 import { Label } from "@radix-ui/react-label";
 import { Settings } from "lucide-react";
 import { Input } from "@/components/ui/input"; // Adjust the import path according to your project structure
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   onApiKeyInputChange: (event: any) => void;
@@ -19,15 +19,18 @@ const Navbar = (props: Props) => {
 
   const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setApiKeyInput(event.target.value);
+    localStorage.setItem('apiKeyInput', event.target.value);
   };
 
   const handleHostInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setHostInput(event.target.value);
+    localStorage.setItem('apiHostInput', event.target.value);
   };
 
 
   const handleBaseURLInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBaseURL(event.target.value);
+    localStorage.setItem('baseURL', event.target.value);
   };
 
   const handleConfDoneBtnClick = () => {
@@ -42,6 +45,12 @@ const Navbar = (props: Props) => {
     setIsPopoverOpen(false); // Close the Popover
   };
 
+  useEffect(() => {
+    setApiKeyInput(localStorage.getItem('apiKeyInput') || '');
+    setHostInput(localStorage.getItem('apiHostInput') || '');
+    setBaseURL(localStorage.getItem('baseURL') || '');
+  }, []);
+
 
 
   return (
@@ -51,23 +60,23 @@ const Navbar = (props: Props) => {
       </div>
       <nav className="flex items-center gap-4">
 
-        <div className="text-sm font-medium hover:underline underline-offset-4" >
+        <div className="text-sm bg-background text-foreground font-medium hover:underline underline-offset-4" >
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline"><Settings className='mr-2' size={16} />Configure</Button>
             </PopoverTrigger>
             <PopoverPortal>
-              <PopoverContent className="w-80 bg-white shadow-lg px-4 py-2 rounded-lg">
+              <PopoverContent className="w-80 bg-background shadow-lg px-4 py-2 rounded-lg">
                 <div className="grid gap-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium leading-none">Rapid Api Configurations</h4>
+                    <h4 className="font-medium text-foreground leading-none">Rapid Api Configurations</h4>
                     <p className="text-sm text-muted-foreground">
                       Set the required fields.
                     </p>
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center gap-4">
-                      <Label className='w-52' htmlFor="height">Base URL</Label>
+                      <Label className='w-52 text-muted-foreground' htmlFor="height">Base URL</Label>
                       <Input
                         value={baseURL}
                         onChange={handleBaseURLInputChange}
@@ -75,7 +84,7 @@ const Navbar = (props: Props) => {
                       />
                     </div>
                     <div className="flex items-center gap-4">
-                      <label className='w-52' htmlFor="width">rapid API key</label>
+                      <label className='w-52 text-muted-foreground' htmlFor="width">rapid API key</label>
                       <Input
                         value={apiKeyInput}
                         onChange={handleApiKeyInputInputChange}
@@ -83,7 +92,7 @@ const Navbar = (props: Props) => {
                       />
                     </div>
                     <div className="flex items-center gap-4">
-                      <Label className='w-52' htmlFor="apiHost">rapid API Host</Label>
+                      <Label className='w-52 text-muted-foreground' htmlFor="apiHost">rapid API Host</Label>
                       <Input
                         value={apiHostInput}
                         onChange={handleHostInputInputChange}

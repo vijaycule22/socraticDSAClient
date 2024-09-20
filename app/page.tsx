@@ -287,7 +287,7 @@ export default function Home() {
 
           <ResizablePanel className='mr-2'>
 
-            <div className='bg-white p-2 mb-1 flex items-center'>
+            <div className='bg-background p-2 mb-1 flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
               <TooltipProvider>
 
@@ -295,7 +295,7 @@ export default function Home() {
 
                   <TooltipTrigger asChild>
 
-                    <Button className='ml-2 mr-1' variant="outline">
+                    <Button className='ml-2 mr-1 text-muted-foreground' variant="outline">
 
                       <ChevronLeft />
 
@@ -321,7 +321,7 @@ export default function Home() {
 
                   <TooltipTrigger asChild>
 
-                    <Button variant="outline" >
+                    <Button variant="outline" className='text-muted-foreground'>
 
                       <ChevronRight />
 
@@ -344,11 +344,11 @@ export default function Home() {
 
             {ProblemCaseStudy != null ? (
 
-              <div className='bg-white p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
+              <div className='bg-background p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
 
                 <div className="space-y-4 ">
 
-                  <h1 className="text-2xl font-bold">{ProblemCaseStudy?.custom_name}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">{ProblemCaseStudy?.custom_name}</h1>
 
                   <p className="text-muted-foreground"><em>{ProblemCaseStudy?.description}</em></p>
 
@@ -356,7 +356,7 @@ export default function Home() {
 
                 <div className="mt-4 space-y-4">
 
-                  <h2 className="text-xl font-bold">Example</h2>
+                  <h2 className="text-xl font-bold text-foreground">Example</h2>
 
                   {ProblemCaseStudy.examples.map((example: any, id) => (
 
@@ -388,7 +388,7 @@ export default function Home() {
 
                 <div className="mt-4 space-y-4">
 
-                  <h2 className="text-xl font-bold">Constraints</h2>
+                  <h2 className="text-xl font-bold text-foreground">Constraints</h2>
 
                   {ProblemCaseStudy.constraints.map((constraints: any, id) => (
 
@@ -409,7 +409,7 @@ export default function Home() {
               </div>
 
             ) : (
-              <div className='bg-white p-4  round h-full'>
+              <div className='bg-background p-4  round h-full'>
 
                 <Skeleton className="h-[40px] w-[80%] rounded-xl mb-4" />
                 <Skeleton className="h-[15px] w-[50%] rounded-xl mb-1" />
@@ -440,7 +440,7 @@ export default function Home() {
               <ResizablePanel className='mb-2' >
 
 
-                <div className='border-2 bg-white border-slate-50 border-solid'>
+                <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
 
                   <div className='my-2 mx-1 flex'>
 
@@ -480,7 +480,7 @@ export default function Home() {
 
               </ResizablePanel>
               <ResizableHandle />
-              <div className='flex justify-end p-2 gap-2 bg-white mb-1'>
+              <div className='flex justify-end p-2 gap-2 bg-background mb-1'>
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
 
@@ -491,7 +491,7 @@ export default function Home() {
               </div>
 
               <ResizablePanel>
-                <div className='bg-white p-2 h-full'>
+                <div className='bg-background text-muted-foreground p-2 h-full'>
 
                   <h3>Output:</h3>
 
@@ -524,7 +524,7 @@ export default function Home() {
                       </Alert>
                     </>
                   )}
-                  {(output?.length > 0 && !showSkeleton) && (<div className='bg-white p-4'>
+                  {(output?.length > 0 && !showSkeleton) && (<div className='bg-background p-4'>
                     <pre>{output}
                     </pre>
                   </div>)}

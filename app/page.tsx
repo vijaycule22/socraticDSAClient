@@ -4,6 +4,7 @@ import * as monaco from 'monaco-editor';
 import axios from 'axios';
 
 import Editor from '@monaco-editor/react';
+import { Badge } from "@/components/ui/badge"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -347,8 +348,17 @@ export default function Home() {
               <div className='bg-background p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
 
                 <div className="space-y-4 ">
+                  <div className="flex justify-between items-center">
 
-                  <h1 className="text-2xl font-bold text-foreground">{ProblemCaseStudy?.custom_name}</h1>
+                    <h1 className="text-2xl font-bold text-foreground">{ProblemCaseStudy?.custom_name}
+                    </h1>
+                    <Badge className='ml-2 h-8'
+                      variant={ProblemCaseStudy.difficulty === 'Easy' ? 'secondary' :
+                        ProblemCaseStudy.difficulty === 'Medium' ? 'default' : 'destructive'}
+                    >
+                      {ProblemCaseStudy.difficulty}
+                    </Badge>
+                  </div>
 
                   <p className="text-muted-foreground"><em>{ProblemCaseStudy?.description}</em></p>
 

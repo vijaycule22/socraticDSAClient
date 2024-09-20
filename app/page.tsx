@@ -470,7 +470,7 @@ export default function Home() {
 
                   <Editor
                     height="500px"
-                    defaultLanguage="javascript"
+                    defaultLanguage="python"
                     theme='vs-dark'
                     defaultValue={`// Write your ${selectedLanguage} code here`}
                     onMount={(editor) => (editorRef.current = editor)} />

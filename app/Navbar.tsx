@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent, PopoverPortal } from "@radix-ui/react-popover";
 import { Label } from "@radix-ui/react-label";
-import { Settings } from "lucide-react";
+import { Brain, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input"; // Adjust the import path according to your project structure
 import { useEffect, useState } from "react";
 
@@ -56,7 +56,8 @@ const Navbar = (props: Props) => {
   return (
     <header className="flex items-center justify-between bg-background text-foreground p-4 border-b border-input shadow-sm">
       <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold">Socratic DSA</h1>
+        <Brain className="h-7 w-7" />
+        <h1 className="text-2xl font-bold text-popover-foreground opacity-90">Socratic DSA.</h1>
       </div>
       <nav className="flex items-center gap-4">
 

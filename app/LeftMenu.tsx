@@ -53,7 +53,7 @@ export default function LeftMenu(props: Props) {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" className='text-muted-foreground'>
+                <Button variant="outline" className='text-muted-foreground'>
                     <Menu className="h-5 w-5 mr-2" />
                     <span >Toggle problem list</span>
                 </Button>

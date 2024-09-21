@@ -87,6 +87,8 @@ export default function Home() {
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
   const [Problems, setProblem] = useState([]);
   const [ProblemCaseStudy, setProblemCaseStudy] = useState<CaseStudy>();
+  const [stdin, setStdin] = useState<string>('');
+  const [expected_output, setExpectedOutput] = useState<string>('');
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
   const [isOpen, setIsOpen] = useState(false);
@@ -168,8 +170,8 @@ export default function Home() {
           source_code: code,
           language_id: languageId,
           number_of_runs: null,
-          stdin: "Judge0",
-          expected_output: null,
+          stdin: stdin,
+          expected_output: expected_output,
           cpu_time_limit: null,
           cpu_extra_time: null,
           wall_time_limit: null,
@@ -279,6 +281,49 @@ export default function Home() {
       const data = await response.json();
       setProblemCaseStudy(data);
       closeSheet();
+      let problem = ProblemCaseStudy?.examples;
+      let inputArray: any[] = [];
+      let outputArray: any[] = [];
+
+      if (problem) {
+        problem.forEach((element: any) => {
+          const input: any[] = element["custom_input"];
+          const output: any = element["output"];
+          if (input.length > 1) {
+            input.forEach((item: any) => {
+              inputArray.push(item);
+            });
+          } else {
+            inputArray.push(input[0]);
+          }
+          if (Array.isArray(output)) {
+            if (output.length > 1) {
+              output.forEach((item: any) => {
+                outputArray.push(item);
+              });
+            } else {
+              outputArray.push(output[0]);
+            }
+          } else {
+            outputArray.push(output);
+          }
+        });
+
+
+        console.log("inputArray:", inputArray);
+        console.log("outputArray:", outputArray);
+
+        const buildString = (arrays: number[][]): string => {
+          return arrays.map(arr => Array.isArray(arr) ? arr.join(' ') : arr).join('\\n');
+        };
+        const problemLength = problem.length;
+        const result = `${problemLength}\\n${buildString(inputArray)}`;
+        const outputResult = `${buildString(outputArray)}`;
+        console.log("Result String:\n", result);
+        console.log("outputResult String:\n", outputResult);
+        setStdin(result);
+        setExpectedOutput(outputResult);
+      }
 
       console.log("Problem details:", ProblemCaseStudy);
     } catch (error) {

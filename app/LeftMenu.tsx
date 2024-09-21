@@ -58,7 +58,7 @@ export default function LeftMenu(props: Props) {
                     <span >Toggle problem list</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-zinc-800">
                 <SheetHeader>
                     <SheetTitle>Problems</SheetTitle>
                 </SheetHeader>
@@ -67,14 +67,14 @@ export default function LeftMenu(props: Props) {
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search problems"
-                            className="pl-8"
+                            className="flex-1 pl-8 mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <div className="h-[calc(100vh-150px)] overflow-y-auto">
                         {filteredProblems.map((problem, id) => (
-                            <div key={problem.name} className="py-2 border-b">
+                            <div key={problem.name} className="py-2 border-b border-zinc-600">
                                 <div className="flex justify-between items-center gap-3 cursor-pointer">
                                     <span className={`${props.selectedProblem == problem.name ? 'text-indigo-600' : 'text-muted-foreground'}`} onClick={() => onProblemSelectEvent(problem.name)}>{id + 1}. {problem.custom_name}</span>
                                     <Badge

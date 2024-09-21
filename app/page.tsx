@@ -38,6 +38,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import LeftMenu from './LeftMenu';
 import { CodeBlock } from './CodeBlock';
 import ChatMenu from './ChatMenu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 
 
@@ -570,7 +572,7 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`// Write your ${selectedLanguage} code here`}
+                    defaultValue={`// Write your Python code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -589,9 +591,9 @@ export default function Home() {
               </div>
 
               <ResizablePanel>
-                <div className='bg-background text-muted-foreground p-2 h-full'>
+                <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
 
-                  <h3>Output:</h3>
+                  {/* <h3>Output:</h3> */}
 
                   {showSkeleton &&
                     <div>
@@ -626,6 +628,50 @@ export default function Home() {
                     <pre>{output}
                     </pre>
                   </div>)}
+
+                  {(outputError?.length <= 0 && !showSkeleton) && (
+                    <div>
+                      <h1 className='text-green-500 text-xl mb-2'>Accepted</h1>
+                      <Tabs defaultValue="account" className="w-[400px]">
+                        <TabsList>
+                          <TabsTrigger value="case1">case 1</TabsTrigger>
+                          <TabsTrigger value="case2">case 2</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="case1">
+
+                          <div>
+                            <label className='text-zinc-500'>Input</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1'>
+                              param1 = [1,2,3]
+                            </div>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                              param2 = [1,2,3]
+                            </div>
+                          </div>
+                          <div>
+                            <label className='text-zinc-500'>Output</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                              result
+                            </div>
+                          </div>
+                          <div>
+                            <label className='text-zinc-500'>Expected</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                              <div>
+                                {expected_output.split('\n').map((num, index) => (
+                                  <div key={index}>{num}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="case2">
+
+                        </TabsContent>
+                      </Tabs>
+                    </div>)}
+
+
 
 
 

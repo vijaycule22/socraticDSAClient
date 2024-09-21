@@ -602,7 +602,7 @@ export default function Home() {
 
                   {(outputError?.length > 0 && !showSkeleton) && (
                     <>
-                      <Alert variant="destructive" className='mb-4'>
+                      <Alert variant="destructive" className='mb-4 bg-red-200'>
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>

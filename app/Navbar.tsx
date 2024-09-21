@@ -61,13 +61,13 @@ const Navbar = (props: Props) => {
       </div>
       <nav className="flex items-center gap-4">
 
-        <div className="text-sm bg-background text-foreground font-medium hover:underline underline-offset-4" >
+        <div className="text-sm bg-zinc-800 text-foreground font-medium hover:underline underline-offset-4" >
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline"><Settings className='mr-2' size={16} />Configure</Button>
             </PopoverTrigger>
             <PopoverPortal>
-              <PopoverContent className="w-80 bg-background shadow-lg px-4 py-2 rounded-lg">
+              <PopoverContent side="bottom" align="end" className="w-96 bg-zinc-800 shadow-xl px-4 py-4 rounded-lg mt-2">
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <h4 className="font-medium text-foreground leading-none">Rapid Api Configurations</h4>
@@ -78,7 +78,7 @@ const Navbar = (props: Props) => {
                   <div className="grid gap-2">
                     <div className="flex items-center gap-4">
                       <Label className='w-52 text-muted-foreground' htmlFor="height">Base URL</Label>
-                      <Input
+                      <Input className="w-full mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                         value={baseURL}
                         onChange={handleBaseURLInputChange}
                         placeholder="Set base url here"
@@ -86,15 +86,16 @@ const Navbar = (props: Props) => {
                     </div>
                     <div className="flex items-center gap-4">
                       <label className='w-52 text-muted-foreground' htmlFor="width">rapid API key</label>
-                      <Input
+                      <Input className="w-full mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                         value={apiKeyInput}
+                        type="password"
                         onChange={handleApiKeyInputInputChange}
                         placeholder="Set rapidapi api key here"
                       />
                     </div>
                     <div className="flex items-center gap-4">
                       <Label className='w-52 text-muted-foreground' htmlFor="apiHost">rapid API Host</Label>
-                      <Input
+                      <Input className="w-full mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                         value={apiHostInput}
                         onChange={handleHostInputInputChange}
                         placeholder="Set rapidapi Api Host here"

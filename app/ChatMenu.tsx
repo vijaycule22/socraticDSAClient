@@ -1,93 +1,144 @@
-'use client'
-
-import { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { MessageCircle, Send, X } from 'lucide-react'
+import { SendIcon, UserIcon, BotIcon, XIcon, MessageCircleIcon, AlertCircle, Brain } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Popover, PopoverTrigger, PopoverContent } from '@radix-ui/react-popover'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { CodeBlock } from './CodeBlock'
 
-type Message = {
-    id: number
-    text: string
-    sender: 'user' | 'bot'
+interface Message {
+    role: 'user' | 'system'
+    content: string
+    read: boolean
 }
 
-export default function ChatPopup() {
-    const [isOpen, setIsOpen] = useState(false)
-    const [messages, setMessages] = useState<Message[]>([
-        { id: 1, text: "Hello! How can I help you today?", sender: 'bot' }
-    ])
+interface AIHelpPopupProps {
+    isOpen: boolean
+    onOpen: () => void
+    onClose: () => void
+    onSendMessage: (message: string) => void
+    messages: Message[]
+    recentResponseFromAi?: string
+}
+
+export default function ChatMenu({ isOpen, onOpen, onClose, onSendMessage, messages = [], recentResponseFromAi }: AIHelpPopupProps) {
     const [inputMessage, setInputMessage] = useState('')
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const chatRef = useRef<HTMLDivElement>(null)
+    const [unreadCount, setUnreadCount] = useState(0);
 
-    const toggleChat = () => setIsOpen(!isOpen)
+    // let unreadCount = messages.filter(m => !m.read).length
 
-    const sendMessage = () => {
+    useEffect(() => {
+        if (chatRef.current) {
+            chatRef.current.scrollTop = chatRef.current.scrollHeight
+        }
+    }, [messages])
+
+    const handleSendMessage = () => {
         if (inputMessage.trim()) {
-            const newMessage: Message = {
-                id: messages.length + 1,
-                text: inputMessage,
-                sender: 'user'
-            }
-            setMessages([...messages, newMessage])
+            onSendMessage(inputMessage)
             setInputMessage('')
-
-            // Simulate bot response
-            setTimeout(() => {
-                const botResponse: Message = {
-                    id: messages.length + 2,
-                    text: "Thank you for your message. How else can I assist you?",
-                    sender: 'bot'
-                }
-                setMessages(prevMessages => [...prevMessages, botResponse])
-            }, 1000)
         }
     }
 
+    const handleOnsendMessage = (message: string) => {
+        onSendMessage(message)
+    }
+
+    const handleOpen = () => {
+        onOpen()
+        setIsPopoverOpen(false);
+    }
+
+    useEffect(() => {
+        setIsPopoverOpen(true);
+        if (recentResponseFromAi) {
+            setTimeout(() => {
+                setIsPopoverOpen(false);
+            }, 5000);
+        }
+    }, [recentResponseFromAi])
+
+    useEffect(() => {
+        if (isOpen) {
+            messages.map(message => {
+                message.read = true;
+            });
+            console.log(messages)
+            setUnreadCount(messages.filter(m => !m.read).length);
+        }
+    }, [isOpen, messages])
+
     return (
-        <div className="fixed bottom-4 right-4 z-50">
-            {!isOpen && (
-                <Button onClick={toggleChat} className="rounded-full w-12 h-12 shadow-lg">
-                    <MessageCircle className="h-6 w-6" />
-                </Button>
-            )}
+        <div >
+            <Popover open={isPopoverOpen && !isOpen} >
+                <PopoverTrigger asChild>
+                    <Button
+                        onClick={handleOpen}
+                        className="fixed bottom-7 right-6 rounded-full z-50 bg-gray-700 hover:bg-gray-600 text-white"
+                        size="icon"
+                    >
+                        <Brain className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <Badge className="absolute -top-2 -right-2 px-2 py-1 text-xs font-bold rounded-full bg-red-500 text-white">
+                                {unreadCount}
+                            </Badge>
+                        )}
+                    </Button>
+                </PopoverTrigger>
+                {recentResponseFromAi && <PopoverContent side="top" align="end" className="w-80 bg-gray-800 border border-gray-700 cursor-pointer rounded-lg shadow-lg mb-2" onClick={handleOpen}>
+                    <Alert className=' bg-gray-800 border border-gray-700'>
+                        <Brain className="h-4 w-4" />
+                        <AlertTitle>AI Help!</AlertTitle>
+                        <AlertDescription>
+                            <div>
+                                {recentResponseFromAi}
+                            </div>
+                            {/* {code_output && <CodeBlock code={code_output} language="python" />} */}
+                        </AlertDescription>
+                    </Alert>
+                </PopoverContent>
+                }
+            </Popover>
+
             {isOpen && (
-                <div className="bg-background border rounded-lg shadow-xl w-80 flex flex-col transition-all duration-300 ease-in-out">
-                    <div className="flex justify-between items-center p-4 border-b">
-                        <h2 className="text-lg font-semibold text-foreground">Chat Support</h2>
-                        <Button variant="ghost" size="icon" onClick={toggleChat}>
-                            <X className="h-4 w-4 text-foreground" />
+                <div className="fixed bottom-20 right-4 w-96 h-[600px] bg-zinc-800 border border-gray-700 rounded-lg shadow-lg flex flex-col z-50">
+                    <div className="flex justify-between items-center p-4 border-b border-gray-700">
+                        <h2 className="text-lg font-semibold text-white flex items-center gap-2"> <Brain className="h-5 w-5" /> AI Assistant!</h2>
+                        <Button onClick={onClose} size="icon" variant="ghost" className="text-gray-400 hover:text-white">
+                            <XIcon className="h-4 w-4" />
                         </Button>
                     </div>
-                    <ScrollArea className="flex-grow p-4 h-96">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`mb-4 text-foreground ${message.sender === 'user' ? 'text-right' : 'text-left'
-                                    }`}
-                            >
-                                <span
-                                    className={`inline-block p-2 rounded-lg ${message.sender === 'user'
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted'
-                                        }`}
-                                >
-                                    {message.text}
-                                </span>
+                    <ScrollArea className="flex-grow p-4" ref={chatRef}>
+                        {messages.map((message, index) => (
+                            <div key={index} className={`flex items-start mb-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                <div className={`flex items-start ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.role === 'user' ? 'bg-blue-500' : 'bg-green-500'} text-white`}>
+                                        {message.role === 'user' ? <UserIcon size={16} /> : <BotIcon size={16} />}
+                                    </div>
+                                    <div className={`max-w-[80%] mx-2 p-3 rounded-lg ${message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}>
+                                        <p className="text-sm">{message.content}</p>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </ScrollArea>
-                    <div className="p-4 border-t flex">
-                        <Input
-                            type="text"
-                            placeholder="Type a message..."
-                            value={inputMessage}
-                            onChange={(e) => setInputMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            className="flex-grow mr-2 text-foreground"
-                        />
-                        <Button onClick={sendMessage}>
-                            <Send className="h-4 w-4" />
-                        </Button>
+                    <div className="p-4 border-t border-gray-700">
+                        <div className="flex items-center">
+                            <input
+                                type="text"
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                placeholder="Type your message..."
+                                className="flex-1 p-2 mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <Button onClick={handleSendMessage} size="icon" className="bg-blue-500 hover:bg-blue-600 text-white">
+                                <SendIcon className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}

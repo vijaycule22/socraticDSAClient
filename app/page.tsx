@@ -35,15 +35,21 @@ import {
 import Navbar from './Navbar';
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import ChatPopup from './ChatMenu';
 import LeftMenu from './LeftMenu';
 import { CodeBlock } from './CodeBlock';
+import ChatMenu from './ChatMenu';
 
 
 
 type language = {
   name: string;
   id: string;
+}
+
+interface Message {
+  role: 'user' | 'system'
+  content: string
+  read: boolean
 }
 
 interface Judge0Response {
@@ -84,6 +90,8 @@ export default function Home() {
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
   const [isOpen, setIsOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [text_output, setTextOutput] = useState<string>('');
@@ -94,18 +102,19 @@ export default function Home() {
     console.log('Hello, world!');
   }
 `;
-
   const errorRequest =
   {
     "messages": [
       {
         "role": "system",
-        "content": "You are an AI assistant focused on teaching Data Structures and Algorithms, particularly sorting algorithms, using the Socratic method. Guide students to discover solutions through insightful, context-aware questioning rather than direct answers. Provide real-time feedback based on their code execution, personalize guidance to their understanding level, and encourage exploration and reflection. Always be patient, supportive, and focused on deepening their understanding through guided discovery."
+        "content": "You are an AI assistant focused on teaching Data Structures and Algorithms, particularly sorting algorithms, using the Socratic method. Guide students to discover solutions through insightful, context-aware questioning rather than direct answers. Provide real-time feedback based on their code execution, personalize guidance to their understanding level, and encourage exploration and reflection. Always be patient, supportive, and focused on deepening their understanding through guided discovery.",
+        "read": true
       },
       {
         "role": "user",
-        "content": "File \"script.py\", line 1\n    name = input(@@@#$)\n                 ^\nSyntaxError: invalid syntax\n"
-      }
+        "content": "File \"script.py\", line 1\n    name = input(@@@#$)\n                 ^\nSyntaxError: invalid syntax\n",
+        "read": true
+      },
     ]
   }
 
@@ -189,14 +198,15 @@ export default function Home() {
         const subResult = await response.json();
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message);
-        if (outputError?.length > 0) {
+        const isErrorExist = subResult.stderr || subResult.message;
+        if (isErrorExist?.length > 0) {
           console.log(outputError);
-          errorRequest.messages[1].content = String(outputError);
+          errorRequest.messages[1].content = String(isErrorExist);
           openApiChat(errorRequest);
         }
         setShowSkeleton(false);
         console.log(output);
-      }, 3000)
+      }, 2000)
     } catch (error) {
       console.error('Error running code:', error);
     }
@@ -222,6 +232,10 @@ export default function Home() {
     try {
       const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
       console.log(res.data);
+      setChatMessages(prevMessages => [
+        ...prevMessages,
+        { role: 'system', content: res.data.text_output, read: false }
+      ]);
       setTextOutput(res.data.text_output);
       setCodeOutput(res.data.code_output);
     }
@@ -277,6 +291,35 @@ export default function Home() {
     GetProblemList();
   }, []);
 
+  useEffect(() => {
+    console.log("Updated chatMessages:", chatMessages);
+
+
+  }, [chatMessages]);
+
+  const handleChatMenuOpen = () => {
+    setIsChatOpen(true)
+    // setMessages(messages.map(m => ({ ...m, read: true })))
+  }
+
+  const handleChatMenuClose = () => {
+    setIsChatOpen(false)
+  }
+
+  const handleSendMessage = (inputMessage: string) => {
+    console.log(inputMessage);
+    if (inputMessage.trim()) {
+      setChatMessages(prevMessages => [
+        ...prevMessages,
+        { role: 'user', content: inputMessage, read: true }
+      ]);
+
+      // Call openApiChat when user sends a message
+      errorRequest.messages.push(...chatMessages, { role: 'user', content: inputMessage, read: true });
+      openApiChat(errorRequest);
+    }
+  }
+
 
 
   return (
@@ -286,7 +329,7 @@ export default function Home() {
       <div className='px-3 py-1 flex body-height'>
         <ResizablePanelGroup direction="horizontal">
 
-          <ResizablePanel className='mr-2'>
+          <ResizablePanel >
 
             <div className='bg-background p-2 mb-1 flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
@@ -443,11 +486,11 @@ export default function Home() {
 
           </ResizablePanel>
 
-          <ResizableHandle />
+          <ResizableHandle className='px-1' />
 
           <ResizablePanel>
             <ResizablePanelGroup direction="vertical">
-              <ResizablePanel className='mb-2' >
+              <ResizablePanel>
 
 
                 <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
@@ -489,7 +532,7 @@ export default function Home() {
 
 
               </ResizablePanel>
-              <ResizableHandle />
+              <ResizableHandle className='py-1' />
               <div className='flex justify-end p-2 gap-2 bg-background mb-1'>
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
@@ -522,7 +565,7 @@ export default function Home() {
                         </AlertDescription>
                       </Alert>
 
-                      <Alert>
+                      {/* <Alert>
                         <Brain className="h-4 w-4" />
                         <AlertTitle>AI Help!</AlertTitle>
                         <AlertDescription>
@@ -531,7 +574,7 @@ export default function Home() {
                           </div>
                           {code_output && <CodeBlock code={code_output} language="python" />}
                         </AlertDescription>
-                      </Alert>
+                      </Alert> */}
                     </>
                   )}
                   {(output?.length > 0 && !showSkeleton) && (<div className='bg-background p-4'>
@@ -551,7 +594,8 @@ export default function Home() {
         </ResizablePanelGroup>
       </div>
 
-      <ChatPopup />
+      {/* <ChatPopup /> */}
+      <ChatMenu isOpen={isChatOpen} onOpen={handleChatMenuOpen} onClose={handleChatMenuClose} onSendMessage={handleSendMessage} recentResponseFromAi={text_output} messages={chatMessages} />
     </div>
   );
 }

@@ -41,15 +41,13 @@
   }
 }
 
-body{
-  /* background: #f4f4f4; */
-}
+
 
 .body-height{
   height: calc(100vh - 89px);
 }
 
 .scroll-height{
-  height: calc(100vh - 166px);
+  height: calc(100vh - 154px);
   overflow: auto;
 }

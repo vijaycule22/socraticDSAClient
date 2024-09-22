@@ -38,6 +38,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import LeftMenu from './LeftMenu';
 import { CodeBlock } from './CodeBlock';
 import ChatMenu from './ChatMenu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 
 
@@ -570,7 +572,7 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`# Write your ${selectedLanguage} code here`}
+                    defaultValue={`// Write your Python code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -589,9 +591,9 @@ export default function Home() {
               </div>
 
               <ResizablePanel>
-                <div className='bg-background text-muted-foreground p-2 h-full'>
+                <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
 
-                  <h3>Output:</h3>
+                  {/* <h3>Output:</h3> */}
 
                   {showSkeleton &&
                     <div>
@@ -626,6 +628,8 @@ export default function Home() {
                     <pre>{output}
                     </pre>
                   </div>)}
+
+
 
 
 

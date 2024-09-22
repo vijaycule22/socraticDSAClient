@@ -199,8 +199,8 @@ export default function Home() {
 
         const subResult = await response.json();
         setOutput(subResult.stdout);
-        setOutputError(subResult.stderr || subResult.message);
-        const isErrorExist = subResult.stderr || subResult.message;
+        setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
+        const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
         if (isErrorExist?.length > 0) {
           console.log(outputError);
           errorRequest.messages[1].content = String(isErrorExist);
@@ -462,7 +462,7 @@ export default function Home() {
 
                       <p className="text-muted-foreground">
 
-                        <strong>Input:</strong><code>{example.input}</code>
+                        <strong>Input:</strong> <code>{example.input}</code>
 
                       </p>
 
@@ -570,7 +570,7 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`// Write your ${selectedLanguage} code here`}
+                    defaultValue={`# Write your ${selectedLanguage} code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -582,7 +582,7 @@ export default function Home() {
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
 
-                <Button>Submit</Button>
+                <Button  onClick={runCode} variant="secondary">Submit</Button>
 
 
 

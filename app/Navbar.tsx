@@ -9,6 +9,12 @@ type Props = {
   onApiKeyInputChange: (event: any) => void;
 }
 
+interface config
+{
+  apiHostInput: string
+  apiKeyInput : string
+  baseURL :string
+}
 
 const Navbar = (props: Props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -16,6 +22,7 @@ const Navbar = (props: Props) => {
   const [apiKeyInput, setApiKeyInput] = useState<string>('');
   const [apiHostInput, setHostInput] = useState<string>('');
   const [baseURL, setBaseURL] = useState<string>('');
+  const [config, setConfig] = useState(null);
 
   const handleApiKeyInputInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setApiKeyInput(event.target.value);
@@ -46,12 +53,27 @@ const Navbar = (props: Props) => {
   };
 
   useEffect(() => {
+    fetch('/Config.json')
+      .then((response) => response.json())
+      .then((data) => setConfig(data))
+      .catch((error) => console.error('Error fetching config:', error));
+    if(config)
+    {
+      // setApiKeyInput(config.apiKeyInput);
+      // setBaseURL(config.baseURL);
+      // setHostInput(config.apiHostInput);
+
+    }
+    console.log("config details:", config);
     setApiKeyInput(localStorage.getItem('apiKeyInput') || '');
     setHostInput(localStorage.getItem('apiHostInput') || '');
     setBaseURL(localStorage.getItem('baseURL') || '');
+    
   }, []);
 
-
+  // if (!config) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <header className="flex items-center justify-between bg-background text-foreground p-4 border-b border-input shadow-sm">
@@ -70,10 +92,10 @@ const Navbar = (props: Props) => {
               <PopoverContent side="bottom" align="end" className="w-96 bg-zinc-800 shadow-xl px-4 py-4 rounded-lg mt-2">
                 <div className="grid gap-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium text-foreground leading-none">Rapid Api Configurations</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="font-medium text-foreground leading-none">Socratic DSA API Configuration</h4>
+                    {/* <p className="text-sm text-muted-foreground">
                       Set the required fields.
-                    </p>
+                    </p> */}
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center gap-4">
@@ -85,7 +107,7 @@ const Navbar = (props: Props) => {
                       />
                     </div>
                     <div className="flex items-center gap-4">
-                      <label className='w-52 text-muted-foreground' htmlFor="width">rapid API key</label>
+                      <label className='w-52 text-muted-foreground' htmlFor="width">API key</label>
                       <Input className="w-full mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                         value={apiKeyInput}
                         type="password"
@@ -94,7 +116,7 @@ const Navbar = (props: Props) => {
                       />
                     </div>
                     <div className="flex items-center gap-4">
-                      <Label className='w-52 text-muted-foreground' htmlFor="apiHost">rapid API Host</Label>
+                      <Label className='w-52 text-muted-foreground' htmlFor="apiHost">API Host</Label>
                       <Input className="w-full mr-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-50"
                         value={apiHostInput}
                         onChange={handleHostInputInputChange}

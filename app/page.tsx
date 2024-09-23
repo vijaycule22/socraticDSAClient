@@ -636,9 +636,9 @@ export default function Home() {
                     <div>
                       <h1 className='text-green-500 text-xl mb-2'>Accepted</h1>
                       <Tabs defaultValue="account" className="w-[400px]">
-                      {arrayData.map((item:any) => (
-                        <TabsList>
-                           <TabsTrigger key={item.case} value={`${item.case}`}>
+                      {arrayData.map((item:any, id:number) => (
+                        <TabsList key={item.case}>
+                           <TabsTrigger value={`${item.case}`}>
                              {item.case}
                              </TabsTrigger>
                              </TabsList>

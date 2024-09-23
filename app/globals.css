@@ -51,3 +51,21 @@
   height: calc(100vh - 154px);
   overflow: auto;
 }
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;  /* Dark background for the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #444;  /* Darker thumb for contrast */
+  border-radius: 10px;
+  border: 2px solid #1a1a1a;  /* Matches the track */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #888;  /* Lighter thumb on hover for better visibility */
+}

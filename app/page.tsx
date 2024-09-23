@@ -39,6 +39,7 @@ import LeftMenu from './LeftMenu';
 import { CodeBlock } from './CodeBlock';
 import ChatMenu from './ChatMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Item } from '@radix-ui/react-select';
 
 
 
@@ -77,10 +78,19 @@ interface CaseStudy {
   constraints: []
 }
 
+interface TestCases
+{
+  Id: number
+  CaseID:string
+  Input:any[]
+  Ouput:any[]
+  ExpectedOutput:any[]
+}
+
 
 export default function Home() {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const [output, setOutput] = useState([]);
+  const [output, setOutput] = useState<any[]>([]);
   const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
@@ -100,6 +110,10 @@ export default function Home() {
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [text_output, setTextOutput] = useState<string>('');
   const [code_output, setCodeOutput] = useState<string>('');
+  const [problemCaseLength,setproblemCaseLength] = useState(1);
+  const [tabArray,settabArray] = useState<any[]>([]);
+  const tabCount = 1;
+  const [arrayData, setArrayData] = useState<any>([]);
 
   const sampleCode = `
   function sayHello() {
@@ -204,12 +218,15 @@ export default function Home() {
         setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
         const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
         if (isErrorExist?.length > 0) {
-          console.log(outputError);
           errorRequest.messages[1].content = String(isErrorExist);
           openApiChat(errorRequest);
         }
         setShowSkeleton(false);
-        console.log(output);
+        if(subResult.stdout)
+        {
+          parseResponse(subResult);
+        }
+        
       }, 2000)
     } catch (error) {
       console.error('Error running code:', error);
@@ -249,6 +266,33 @@ export default function Home() {
 
   }
 
+  const parseResponse = async (response:any) => {
+    const stdout = response.stdout;
+    const lines = stdout.split('\n'); // Split by newline
+    const result = [];
+
+    let caseCount = 1;
+
+    for (let i = 0; i < lines.length; i += 2) {
+      if (lines[i].startsWith('Input:')) {
+        // Extract input
+        const inputArray = lines[i].replace('Input: ', '').trim();
+    
+        // Extract output
+        const outputArray = lines[i + 1].replace('Output: ', '').trim();
+        
+        result.push({
+          case: `Case-${caseCount}`,
+          input: inputArray,
+          output: outputArray
+        });
+
+        caseCount++;
+      }
+      setArrayData(result);
+    }
+  }
+    
 
   const GetProblemList = async () => {
     try {
@@ -321,6 +365,7 @@ export default function Home() {
         const problemLength = problem.length;
         const result = `${problemLength}\\n${buildString(inputArray)}`;
         const outputResult = `${buildString(outputArray)}`;
+        setproblemCaseLength(problemLength);
         console.log("Result String:\n", result);
         console.log("outputResult String:\n", outputResult);
         setStdin(result);
@@ -332,7 +377,7 @@ export default function Home() {
       console.error('Error fetching problem details:', error);
     }
   };
-
+  
 
   useEffect(() => {
     GetProblemList();
@@ -572,7 +617,7 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`// Write your Python code here`}
+                    defaultValue={`# Write your Python code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -593,8 +638,7 @@ export default function Home() {
               <ResizablePanel>
                 <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
 
-                  {/* <h3>Output:</h3> */}
-
+                  <h3>Output:</h3>
                   {showSkeleton &&
                     <div>
                       <Skeleton className="h-[20px] w-[180px] rounded-xl m-2" />
@@ -602,37 +646,51 @@ export default function Home() {
                     </div>
                   }
 
-                  {(outputError?.length > 0 && !showSkeleton) && (
-                    <>
-                      <Alert variant="destructive" className='mb-4 bg-red-200'>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>
-                          <pre>{outputError}</pre>
-                        </AlertDescription>
-                      </Alert>
+                  {(output?.length > 0 && !showSkeleton) && (
+                    <div>
+                      <h1 className='text-green-500 text-xl mb-2'>Accepted</h1>
+                      <Tabs defaultValue="account" className="w-[400px]">
+                      {arrayData.map((item:any) => (
+                        <TabsList>
+                           <TabsTrigger key={item.case} value={`${item.case}`}>
+                             {item.case}
+                             </TabsTrigger>
+                             </TabsList>
+                      ))}
 
-                      {/* <Alert>
-                        <Brain className="h-4 w-4" />
-                        <AlertTitle>AI Help!</AlertTitle>
-                        <AlertDescription>
-                          <div>
-                            {text_output}
-                          </div>
-                          {code_output && <CodeBlock code={code_output} language="python" />}
-                        </AlertDescription>
-                      </Alert> */}
-                    </>
-                  )}
-                  {(output?.length > 0 && !showSkeleton) && (<div className='bg-background p-4'>
-                    <pre>{output}
+                        {arrayData.map((item:any) => (
+                              <TabsContent key={item.case} value={`${item.case}`}>
+                                <div>
+                                <label className='text-zinc-500'>Input</label>
+                                <div>
+                                  {item.input}
+                                </div>
+                                </div>
+                                <div>
+                                <label className='text-zinc-500'>Output</label>
+                                <div>
+                                {item.output}
+                                </div>
+                                </div>
+                            {/* <div>
+                            <label className='text-zinc-500'>Expected</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                              <div>
+                                {expected_output.split('\n').map((num, index) => (
+                                  <div key={index}>{num}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div> */}
+                              </TabsContent>
+                            ))}
+                      </Tabs>
+                    </div>)}
+
+                  {/* {(outputError?.length <= 0 && !showSkeleton) && (<div className='bg-background p-4'>
+                    <pre>{outputError}
                     </pre>
-                  </div>)}
-
-
-
-
-
+                  </div>)} */}
                 </div>
               </ResizablePanel>
 
@@ -648,4 +706,3 @@ export default function Home() {
     </div>
   );
 }
-

@@ -78,16 +78,6 @@ interface CaseStudy {
   constraints: []
 }
 
-interface TestCases
-{
-  Id: number
-  CaseID:string
-  Input:any[]
-  Ouput:any[]
-  ExpectedOutput:any[]
-}
-
-
 export default function Home() {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [output, setOutput] = useState<any[]>([]);
@@ -110,9 +100,6 @@ export default function Home() {
   const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
   const [text_output, setTextOutput] = useState<string>('');
   const [code_output, setCodeOutput] = useState<string>('');
-  const [problemCaseLength,setproblemCaseLength] = useState(1);
-  const [tabArray,settabArray] = useState<any[]>([]);
-  const tabCount = 1;
   const [arrayData, setArrayData] = useState<any>([]);
 
   const sampleCode = `
@@ -365,7 +352,6 @@ export default function Home() {
         const problemLength = problem.length;
         const result = `${problemLength}\\n${buildString(inputArray)}`;
         const outputResult = `${buildString(outputArray)}`;
-        setproblemCaseLength(problemLength);
         console.log("Result String:\n", result);
         console.log("outputResult String:\n", outputResult);
         setStdin(result);

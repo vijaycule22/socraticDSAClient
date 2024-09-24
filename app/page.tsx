@@ -103,6 +103,8 @@ export default function Home() {
   const [arrayData, setArrayData] = useState<any>([]);
   const [Judge0Response, setJudge0Response] = useState<any>([]);
   const [activeTab, setActiveTab] = useState("case1"); 
+  const [problemLength,setproblemLength] = useState<number>(0);
+  const [expected_outputArray,setexpected_outputArray] = useState<any>();
 
   const sampleCode = `
   function sayHello() {
@@ -164,30 +166,8 @@ export default function Home() {
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
 
-
-let boilerPlateCode = `
-import sys
-import json
-
-${code}
-
-# Reading input from stdin
-input_data = sys.stdin.read().splitlines()
-
-# If there's only one line, parse that as a single test case
-if len(input_data) == 1:
-    nums = json.loads(input_data[0])
-    print(sort_array(nums))
-else:
-    # Handle multiple test cases
-    for line in input_data:
-        nums = json.loads(line)
-        print(sort_array(nums))
-`;
-                
-
-                console.log(boilerPlateCode);
-
+      setexpected_outputArray(expected_output);
+      console.log("expected_output",expected_output);
       const response = await fetch(`${baseURL}/submissions`, {
         method: 'POST',
         headers: {
@@ -196,7 +176,7 @@ else:
           'x-rapidapi-key': apiKeyInput
         },
         body: JSON.stringify({
-          source_code: boilerPlateCode.trim(),
+          source_code: code,
           language_id: languageId,
           number_of_runs: null,
           stdin: stdin,
@@ -239,6 +219,7 @@ else:
         if(subResult.stdout)
         {
           parseResponse(subResult);
+          
         }
         
       }, 2000)
@@ -296,14 +277,26 @@ else:
         const outputArray = lines[i + 1].replace('Output: ', '').trim();
         
         result.push({
+          Id: caseCount,
           case: `Case-${caseCount}`,
           input: inputArray,
-          output: outputArray
+          output: outputArray,
+          expectedOutput: ""
         });
 
         caseCount++;
       }
       setArrayData(result);
+    }
+    if(problemLength > 0)
+      {
+        console.log("expected_outputArray",expected_outputArray);
+        let expectedarray = expected_outputArray.split('\n');
+          result.forEach((x:any)=>{
+            x.expectedOutput = expectedarray[x.Id-1];
+            console.log("expectedarray[x.Id]" + expectedarray[x.Id-1]) 
+          })
+        
     }
   }
 
@@ -381,18 +374,11 @@ else:
         console.log("outputArray:", outputArray);
         const expectedInputArr = inputArray.map(arr => `[${arr.join(',')}]`).join('\n');
         const expectedOutputArr =  outputArray.map(arr => arr.join('')).join('\n');
-        console.log(expectedInputArr)
-        console.log(expectedOutputArr)
-        // const buildString = (arrays: number[][]): string => {
-        //   return arrays.map(arr => Array.isArray(arr) ? arr.join(' ') : arr).join('\\n');
-        // };
-        // const problemLength = problem.length;
-        // const result = `${buildString(inputArray)}`;
-        // const outputResult = `${buildString(outputArray)}`;
-        // console.log("Result String:\n", result);
-        // console.log("outputResult String:\n", outputResult);
+        
         setStdin(expectedInputArr);
        setExpectedOutput(expectedOutputArr);
+       setproblemLength(problem?problem?.length:0);
+       
       }
     } catch (error) {
       console.error('Error fetching problem details:', error);
@@ -674,36 +660,39 @@ else:
                    <div className="flex items-center mb-2 gap-2">   <h1 className={`${Judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
                       >{Judge0Response?.status.description}</h1>
                       <span className='text-zinc-500 text-sm '>RunTime: {Judge0Response.time}</span></div>
-                      <Tabs value={activeTab}  className="w-[400px]">
+                      <Tabs  className="w-[400px]">
+                      {arrayData.map((item:any) => (
                         <TabsList>
-                          <TabsTrigger  value="case1">case 1</TabsTrigger>
-                          <TabsTrigger value="case2">case 2</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="case1">
-                          <div>
-                            <label className='text-zinc-500'>Input</label>
-                            <div className='bg-muted rounded-lg w-full p-2 mt-1'>
-                              {stdin}
-                            </div>
-                          </div>
-                          <div>
-                            <label className='text-zinc-500'>Output</label>
-                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
-                            {Judge0Response?.stdout}
-                            </div>
-                          </div>
-                          <div>
+                           <TabsTrigger key={item.case} value={`${item.case}`}>
+                             {item.case}
+                             </TabsTrigger>
+                             </TabsList>
+                      ))}
+                      {arrayData.map((item:any) => (
+                              <TabsContent key={item.case} value={`${item.case}`}>
+                                <div>
+                                <label className='text-zinc-500'>Input</label>
+                                <div>
+                                  {item.input}
+                                </div>
+                                </div>
+                                <div>
+                                <label className='text-zinc-500'>Output</label>
+                                <div>
+                                {item.output}
+                                </div>
+                                </div>
+                                <div>
                             <label className='text-zinc-500'>Expected</label>
                             <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
                               <div>
-                              {expected_output}
+                              {item.expectedOutput}
                               </div>
                             </div>
                           </div>
-                        </TabsContent>
-                        <TabsContent value="case2">
-                        </TabsContent>
-                      </Tabs>
+                              </TabsContent>
+                            ))}
+                  </Tabs>
                     </div>)}
 
                     {(outputError?.length > 0 && !showSkeleton) && (

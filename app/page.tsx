@@ -89,8 +89,8 @@ export default function Home() {
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
   const [Problems, setProblem] = useState([]);
   const [ProblemCaseStudy, setProblemCaseStudy] = useState<CaseStudy>();
-  const [stdin, setStdin] = useState<string>('');
-  const [expected_output, setExpectedOutput] = useState<string>('');
+  const [stdin, setStdin] = useState<any>();
+  const [expected_output, setExpectedOutput] = useState<any>();
   // const baseURL = 'http://0.0.0.0:2358';
   //const baseURL = 'https://judge0-ce.p.rapidapi.com';
   const [isOpen, setIsOpen] = useState(false);
@@ -101,6 +101,8 @@ export default function Home() {
   const [text_output, setTextOutput] = useState<string>('');
   const [code_output, setCodeOutput] = useState<string>('');
   const [arrayData, setArrayData] = useState<any>([]);
+  const [Judge0Response, setJudge0Response] = useState<any>([]);
+  const [activeTab, setActiveTab] = useState("case1"); 
 
   const sampleCode = `
   function sayHello() {
@@ -162,6 +164,30 @@ export default function Home() {
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
 
+
+let boilerPlateCode = `
+import sys
+import json
+
+${code}
+
+# Reading input from stdin
+input_data = sys.stdin.read().splitlines()
+
+# If there's only one line, parse that as a single test case
+if len(input_data) == 1:
+    nums = json.loads(input_data[0])
+    print(sort_array(nums))
+else:
+    # Handle multiple test cases
+    for line in input_data:
+        nums = json.loads(line)
+        print(sort_array(nums))
+`;
+                
+
+                console.log(boilerPlateCode);
+
       const response = await fetch(`${baseURL}/submissions`, {
         method: 'POST',
         headers: {
@@ -170,7 +196,7 @@ export default function Home() {
           'x-rapidapi-key': apiKeyInput
         },
         body: JSON.stringify({
-          source_code: code,
+          source_code: boilerPlateCode.trim(),
           language_id: languageId,
           number_of_runs: null,
           stdin: stdin,
@@ -201,6 +227,7 @@ export default function Home() {
         });
 
         const subResult = await response.json();
+        setJudge0Response(subResult);
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
         const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
@@ -279,6 +306,10 @@ export default function Home() {
       setArrayData(result);
     }
   }
+
+  useEffect(() => {
+    getLanguages();
+  }, []);
     
 
   const GetProblemList = async () => {
@@ -293,7 +324,7 @@ export default function Home() {
       setProblem(data);
       console.log("problems:" + data)
 
-      OnSelectProblem(data[0].name);
+      await OnSelectProblem(data[0].name);
     } catch (error) {
       console.error('Error fetching ProblemsList:', error);
     }
@@ -314,14 +345,17 @@ export default function Home() {
       const data = await response.json();
       setProblemCaseStudy(data);
       closeSheet();
-      let problem = ProblemCaseStudy?.examples;
+      let problem = data?.examples;
+      console.log("Problem details:", problem);
       let inputArray: any[] = [];
       let outputArray: any[] = [];
 
       if (problem) {
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
-          const output: any = element["output"];
+          let output: any[] = element["output"];
+          console.log("input:", input);
+          console.log("output:", output);
           if (input.length > 1) {
             input.forEach((item: any) => {
               inputArray.push(item);
@@ -329,7 +363,10 @@ export default function Home() {
           } else {
             inputArray.push(input[0]);
           }
-          if (Array.isArray(output)) {
+          let outputTemp = output;
+          output = []
+          output.push(outputTemp);
+          console.log("outputTemp:", outputTemp);
             if (output.length > 1) {
               output.forEach((item: any) => {
                 outputArray.push(item);
@@ -337,28 +374,26 @@ export default function Home() {
             } else {
               outputArray.push(output[0]);
             }
-          } else {
-            outputArray.push(output);
-          }
         });
 
 
         console.log("inputArray:", inputArray);
         console.log("outputArray:", outputArray);
-
-        const buildString = (arrays: number[][]): string => {
-          return arrays.map(arr => Array.isArray(arr) ? arr.join(' ') : arr).join('\\n');
-        };
-        const problemLength = problem.length;
-        const result = `${problemLength}\\n${buildString(inputArray)}`;
-        const outputResult = `${buildString(outputArray)}`;
-        console.log("Result String:\n", result);
-        console.log("outputResult String:\n", outputResult);
-        setStdin(result);
-        setExpectedOutput(outputResult);
+        const expectedInputArr = inputArray.map(arr => `[${arr.join(',')}]`).join('\n');
+        const expectedOutputArr =  outputArray.map(arr => arr.join('')).join('\n');
+        console.log(expectedInputArr)
+        console.log(expectedOutputArr)
+        // const buildString = (arrays: number[][]): string => {
+        //   return arrays.map(arr => Array.isArray(arr) ? arr.join(' ') : arr).join('\\n');
+        // };
+        // const problemLength = problem.length;
+        // const result = `${buildString(inputArray)}`;
+        // const outputResult = `${buildString(outputArray)}`;
+        // console.log("Result String:\n", result);
+        // console.log("outputResult String:\n", outputResult);
+        setStdin(expectedInputArr);
+       setExpectedOutput(expectedOutputArr);
       }
-
-      console.log("Problem details:", ProblemCaseStudy);
     } catch (error) {
       console.error('Error fetching problem details:', error);
     }
@@ -603,7 +638,9 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`# Write your Python code here`}
+                    defaultValue={`def sort_array(nums):
+                      
+                      `}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -622,9 +659,9 @@ export default function Home() {
               </div>
 
               <ResizablePanel>
-                <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
+                <div className='bg-background text-muted-foreground py-3 px-4 max-h-[40vh] h-full overflow-auto'>
 
-                  <h3>Output:</h3>
+              
                   {showSkeleton &&
                     <div>
                       <Skeleton className="h-[20px] w-[180px] rounded-xl m-2" />
@@ -634,49 +671,52 @@ export default function Home() {
 
                   {(output?.length > 0 && !showSkeleton) && (
                     <div>
-                      <h1 className='text-green-500 text-xl mb-2'>Accepted</h1>
-                      <Tabs defaultValue="account" className="w-[400px]">
-                      {arrayData.map((item:any, id:number) => (
-                        <TabsList key={item.case}>
-                           <TabsTrigger value={`${item.case}`}>
-                             {item.case}
-                             </TabsTrigger>
-                             </TabsList>
-                      ))}
-
-                        {arrayData.map((item:any) => (
-                              <TabsContent key={item.case} value={`${item.case}`}>
-                                <div>
-                                <label className='text-zinc-500'>Input</label>
-                                <div>
-                                  {item.input}
-                                </div>
-                                </div>
-                                <div>
-                                <label className='text-zinc-500'>Output</label>
-                                <div>
-                                {item.output}
-                                </div>
-                                </div>
-                            {/* <div>
+                   <div className="flex items-center mb-2 gap-2">   <h1 className={`${Judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
+                      >{Judge0Response?.status.description}</h1>
+                      <span className='text-zinc-500 text-sm '>RunTime: {Judge0Response.time}</span></div>
+                      <Tabs value={activeTab}  className="w-[400px]">
+                        <TabsList>
+                          <TabsTrigger  value="case1">case 1</TabsTrigger>
+                          <TabsTrigger value="case2">case 2</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="case1">
+                          <div>
+                            <label className='text-zinc-500'>Input</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1'>
+                              {stdin}
+                            </div>
+                          </div>
+                          <div>
+                            <label className='text-zinc-500'>Output</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                            {Judge0Response?.stdout}
+                            </div>
+                          </div>
+                          <div>
                             <label className='text-zinc-500'>Expected</label>
                             <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
                               <div>
-                                {expected_output.split('\n').map((num, index) => (
-                                  <div key={index}>{num}</div>
-                                ))}
+                              {expected_output}
                               </div>
                             </div>
-                          </div> */}
-                              </TabsContent>
-                            ))}
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="case2">
+                        </TabsContent>
                       </Tabs>
                     </div>)}
 
-                  {/* {(outputError?.length <= 0 && !showSkeleton) && (<div className='bg-background p-4'>
-                    <pre>{outputError}
-                    </pre>
-                  </div>)} */}
+                    {(outputError?.length > 0 && !showSkeleton) && (
+                    <>
+                      <Alert variant="destructive" className='mb-4 bg-red-200'>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                          <pre>{outputError}</pre>
+                        </AlertDescription>
+                      </Alert>
+                    </>
+                  )}
                 </div>
               </ResizablePanel>
 

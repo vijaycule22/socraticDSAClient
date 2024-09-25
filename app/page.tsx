@@ -318,6 +318,9 @@ export default function Home() {
       let value: any;
 
       if (problem) {
+        editorRef.current?.setValue('# Write your Python code here.');
+        setJudge0Response(undefined);
+
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
           const output: any[] = element["output"];
@@ -685,7 +688,7 @@ export default function Home() {
                     </div>
                   }
 
-                  {(output?.length > 0 && !showSkeleton) && (
+                  {(output?.length > 0 && !showSkeleton && judge0Response) && (
                     <div>
                       <div className="flex items-center mb-2 gap-2">   <h1 className={`${judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
                       >{judge0Response?.status.description}</h1>

@@ -84,7 +84,7 @@ export default function Home() {
   const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
-  const [apiKeyInput, setApiKeyInput] = useState<string>('dc95dd8dc9mshf855b8e4af02affp1d0291jsn618623af494a');
+  const [apiKeyInput, setApiKeyInput] = useState<string>('f6c7e4b24emsh195ec40478909f7p1cfb3djsn1500c152a2c1');
   const [apiHostInput, setHostInput] = useState<string>('judge0-ce.p.rapidapi.com');
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
   const [Problems, setProblem] = useState([]);
@@ -217,7 +217,7 @@ export default function Home() {
           parseResponse(subResult);
         }
 
-      }, 2000)
+      }, 3000)
     } catch (error) {
       console.error('Error running code:', error);
     }
@@ -693,7 +693,7 @@ export default function Home() {
                         <TabsList>
                           {ProblemCaseStudy?.examples.map((problem: any, id: any) => (
                             <TabsTrigger value={`case ${id + 1}`} key={id}>
-                              {problem.result == processArrayWithoutSpaces(problem.output) ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
+                              {problem.result == problem.output ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
                               case {id + 1}</TabsTrigger>
                           ))}
                         </TabsList>

@@ -131,7 +131,6 @@ export default function Home() {
 
   // Function to dynamically close the sheet
   const closeSheet = () => {
-    console.log('Sheet closed');
     setIsOpen(false);
   };
 
@@ -225,7 +224,6 @@ export default function Home() {
   };
 
   const apiInput = (event: any) => {
-    console.log(event)
     setBaseURL(event.data.baseURL);
     setApiKeyInput(event.data.apiKeyInput);
     setHostInput(event.data.apiHostInput);
@@ -243,7 +241,7 @@ export default function Home() {
   const openApiChat = async (errorRequest: any) => {
     try {
       const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
-      console.log(res.data);
+
       setChatMessages(prevMessages => [
         ...prevMessages,
         { role: 'system', content: res.data.text_output, read: false }
@@ -257,10 +255,6 @@ export default function Home() {
 
   }
 
-  useEffect(() => {
-    console.log(arrayData);
-  }
-    , [arrayData]);
 
   const parseResponse = async (response: any) => {
     const stdout = response.stdout;
@@ -324,9 +318,9 @@ export default function Home() {
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
           const output: any[] = element["output"];
-          console.log(input)
+          console.log("input from server" + input)
+          console.log("output from server" + output)
           setTestCasesInput((prev: any) => [...prev, input]);
-          console.log(output)
           if (input.length > 1) {
             input.forEach((item: any) => {
               inputArray.push(item);
@@ -357,8 +351,8 @@ export default function Home() {
         });
 
         const result = `${problem.length}\n${myResult}`
-        console.log("stdin:", result);
-        console.log("expected_output:", myOutput);
+        console.log("modifieds input for stdin", result);
+        console.log("modified ouput form expected output:", myOutput);
         setStdin(result);
         setExpectedOutput(myOutput);
 
@@ -441,7 +435,6 @@ export default function Home() {
   }
 
   const handleSendMessage = (inputMessage: string) => {
-    console.log(inputMessage);
     if (inputMessage.trim()) {
       setChatMessages(prevMessages => [
         ...prevMessages,
@@ -465,7 +458,7 @@ export default function Home() {
 
           <ResizablePanel >
 
-            <div className='bg-background p-2 mb-1 flex items-center'>
+            <div className='bg-background p-2 border-b flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
               <TooltipProvider>
 
@@ -522,7 +515,7 @@ export default function Home() {
 
             {ProblemCaseStudy != null ? (
 
-              <div className='bg-background p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
+              <div className='bg-background p-4  round  overflow-auto scroll-height border-b' key={ProblemCaseStudy?.name}>
 
                 <div className="space-y-4 ">
                   <div className="flex justify-between items-center">
@@ -629,7 +622,7 @@ export default function Home() {
 
                 <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
 
-                  <div className='my-2 mx-1 flex'>
+                  <div className='py-2 mx-1 border-b flex'>
 
                     <Select onValueChange={handleLanguageChange}>
 
@@ -667,7 +660,7 @@ export default function Home() {
 
               </ResizablePanel>
               <ResizableHandle className='py-1' />
-              <div className='flex justify-end p-2 gap-2 bg-background mb-1'>
+              <div className='flex justify-end p-2 gap-2 bg-background border-b'>
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
 
@@ -700,7 +693,6 @@ export default function Home() {
                         <TabsList>
                           {ProblemCaseStudy?.examples.map((problem: any, id: any) => (
                             <TabsTrigger value={`case ${id + 1}`} key={id}>
-                              {console.log(problem.output, problem.result)}
                               {problem.result == processArrayWithoutSpaces(problem.output) ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
                               case {id + 1}</TabsTrigger>
                           ))}

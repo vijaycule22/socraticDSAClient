@@ -9,11 +9,10 @@ type Props = {
   onApiKeyInputChange: (event: any) => void;
 }
 
-interface config
-{
+interface config {
   apiHostInput: string
-  apiKeyInput : string
-  baseURL :string
+  apiKeyInput: string
+  baseURL: string
 }
 
 const Navbar = (props: Props) => {
@@ -57,8 +56,7 @@ const Navbar = (props: Props) => {
       .then((response) => response.json())
       .then((data) => setConfig(data))
       .catch((error) => console.error('Error fetching config:', error));
-    if(config)
-    {
+    if (config) {
       // setApiKeyInput(config.apiKeyInput);
       // setBaseURL(config.baseURL);
       // setHostInput(config.apiHostInput);
@@ -68,7 +66,7 @@ const Navbar = (props: Props) => {
     setApiKeyInput(localStorage.getItem('apiKeyInput') || '');
     setHostInput(localStorage.getItem('apiHostInput') || '');
     setBaseURL(localStorage.getItem('baseURL') || '');
-    
+
   }, []);
 
   // if (!config) {
@@ -76,7 +74,7 @@ const Navbar = (props: Props) => {
   // }
 
   return (
-    <header className="flex items-center justify-between bg-background text-foreground p-4 border-b border-input shadow-sm">
+    <header className="flex items-center justify-between text-foreground bg-zinc-950 p-4 border-b border-input shadow-sm">
       <div className="flex items-center gap-2">
         <Brain className="h-7 w-7" />
         <h1 className="text-2xl font-bold text-popover-foreground opacity-90">Socratic DSA.</h1>

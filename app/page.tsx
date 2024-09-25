@@ -84,7 +84,7 @@ export default function Home() {
   const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
-  const [apiKeyInput, setApiKeyInput] = useState<string>('f6c7e4b24emsh195ec40478909f7p1cfb3djsn1500c152a2c1');
+  const [apiKeyInput, setApiKeyInput] = useState<string>('dc95dd8dc9mshf855b8e4af02affp1d0291jsn618623af494a');
   const [apiHostInput, setHostInput] = useState<string>('judge0-ce.p.rapidapi.com');
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
   const [Problems, setProblem] = useState([]);

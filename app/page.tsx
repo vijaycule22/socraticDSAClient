@@ -84,7 +84,7 @@ export default function Home() {
   const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
-  const [apiKeyInput, setApiKeyInput] = useState<string>('7006c9c5b7msh60296f977a3f028p100fc6jsnde78de91aa45');
+  const [apiKeyInput, setApiKeyInput] = useState<string>('dc95dd8dc9mshf855b8e4af02affp1d0291jsn618623af494a');
   const [apiHostInput, setHostInput] = useState<string>('judge0-ce.p.rapidapi.com');
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
   const [Problems, setProblem] = useState([]);
@@ -101,10 +101,10 @@ export default function Home() {
   const [text_output, setTextOutput] = useState<string>('');
   const [code_output, setCodeOutput] = useState<string>('');
   const [arrayData, setArrayData] = useState<any>([]);
-  const [Judge0Response, setJudge0Response] = useState<any>([]);
-  const [activeTab, setActiveTab] = useState("case1"); 
-  const [problemLength,setproblemLength] = useState<number>(0);
-  const [expected_outputArray,setexpected_outputArray] = useState<any>();
+  const [judge0Response, setJudge0Response] = useState<Judge0Response>();
+  const [testCasesInput, setTestCasesInput] = useState<any>([]);
+  const [activeTab, setActiveTab] = useState("case 1");
+
 
   const sampleCode = `
   function sayHello() {
@@ -166,8 +166,6 @@ export default function Home() {
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
 
-      setexpected_outputArray(expected_output);
-      console.log("expected_output",expected_output);
       const response = await fetch(`${baseURL}/submissions`, {
         method: 'POST',
         headers: {
@@ -216,12 +214,10 @@ export default function Home() {
           openApiChat(errorRequest);
         }
         setShowSkeleton(false);
-        if(subResult.stdout)
-        {
+        if (subResult.stdout) {
           parseResponse(subResult);
-          
         }
-        
+
       }, 2000)
     } catch (error) {
       console.error('Error running code:', error);
@@ -261,49 +257,27 @@ export default function Home() {
 
   }
 
-  const parseResponse = async (response:any) => {
+  useEffect(() => {
+    console.log(arrayData);
+  }
+    , [arrayData]);
+
+  const parseResponse = async (response: any) => {
     const stdout = response.stdout;
     const lines = stdout.split('\n'); // Split by newline
-    const result = [];
 
-    let caseCount = 1;
 
-    for (let i = 0; i < lines.length; i += 2) {
-      if (lines[i].startsWith('Input:')) {
-        // Extract input
-        const inputArray = lines[i].replace('Input: ', '').trim();
-    
-        // Extract output
-        const outputArray = lines[i + 1].replace('Output: ', '').trim();
-        
-        result.push({
-          Id: caseCount,
-          case: `Case-${caseCount}`,
-          input: inputArray,
-          output: outputArray,
-          expectedOutput: ""
-        });
+    console.log("lines:", lines);
 
-        caseCount++;
-      }
-      setArrayData(result);
-    }
-    if(problemLength > 0)
-      {
-        console.log("expected_outputArray",expected_outputArray);
-        let expectedarray = expected_outputArray.split('\n');
-          result.forEach((x:any)=>{
-            x.expectedOutput = expectedarray[x.Id-1];
-            console.log("expectedarray[x.Id]" + expectedarray[x.Id-1]) 
-          })
-        
-    }
+    ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
+      testCase.result = lines[id];
+    });
+
+
+
+
   }
 
-  useEffect(() => {
-    getLanguages();
-  }, []);
-    
 
   const GetProblemList = async () => {
     try {
@@ -339,16 +313,17 @@ export default function Home() {
       setProblemCaseStudy(data);
       closeSheet();
       let problem = data?.examples;
-      console.log("Problem details:", problem);
       let inputArray: any[] = [];
       let outputArray: any[] = [];
+      let value: any;
 
       if (problem) {
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
-          let output: any[] = element["output"];
-          console.log("input:", input);
-          console.log("output:", output);
+          const output: any[] = element["output"];
+          console.log(input)
+          setTestCasesInput((prev: any) => [...prev, input]);
+          console.log(output)
           if (input.length > 1) {
             input.forEach((item: any) => {
               inputArray.push(item);
@@ -356,35 +331,92 @@ export default function Home() {
           } else {
             inputArray.push(input[0]);
           }
-          let outputTemp = output;
-          output = []
-          output.push(outputTemp);
-          console.log("outputTemp:", outputTemp);
-            if (output.length > 1) {
-              output.forEach((item: any) => {
+          let myOutput = [output];
+          if (Array.isArray(myOutput)) {
+            if (myOutput.length > 1) {
+              myOutput.forEach((item: any) => {
                 outputArray.push(item);
               });
             } else {
-              outputArray.push(output[0]);
+              outputArray.push(myOutput[0]);
             }
+          } else {
+            outputArray.push(myOutput);
+          }
         });
 
+        let myResult = processArray(inputArray);
 
-        console.log("inputArray:", inputArray);
-        console.log("outputArray:", outputArray);
-        const expectedInputArr = inputArray.map(arr => `[${arr.join(',')}]`).join('\n');
-        const expectedOutputArr =  outputArray.map(arr => arr.join('')).join('\n');
-        
-        setStdin(expectedInputArr);
-       setExpectedOutput(expectedOutputArr);
-       setproblemLength(problem?problem?.length:0);
-       
+        let myOutput = processArrayWithoutSpaces(outputArray);
+
+        ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
+          testCase.expected_Result = myOutput;
+        });
+
+        const result = `${problem.length}\n${myResult}`
+        console.log("stdin:", result);
+        console.log("expected_output:", myOutput);
+        setStdin(result);
+        setExpectedOutput(myOutput);
+
       }
+      console.log("Problem details:", data);
     } catch (error) {
       console.error('Error fetching problem details:', error);
     }
   };
-  
+
+  //   function processArray(arr: any[]) {
+  //     // Ensure arr is an array
+  //     if (!Array.isArray(arr)) {
+  //         throw new TypeError('Input must be an array');
+  //     }
+
+  //     // Process each element in the array
+  //     return arr.map(item => {
+  //         // Check if the item is array-like (contains commas, treating it like a string representing an array)
+  //         if (typeof item === 'string' && item.includes(',')) {
+  //             return item.replace(/,/g, ' '); // Replace commas with spaces
+  //         }
+  //         return item; // If not array-like, return the item as it is
+  //     }).join('\n'); // Join everything with new lines
+  // }
+
+  function processArray(arr: any[]): string {
+    // Ensure the input is an array
+    if (!Array.isArray(arr)) {
+      throw new TypeError('Input must be an array');
+    }
+
+    // Process each element
+    return arr.map(item => {
+      // Check if the item is an array
+      if (Array.isArray(item)) {
+        // Join the elements of the inner array with a space and remove commas
+        return item.join(' ');
+      }
+      // If the item is not an array, return it directly as a string
+      return String(item); // Ensure numbers are converted to strings
+    }).join('\n'); // Join everything with new lines
+  }
+  function processArrayWithoutSpaces(arr: any[]): string {
+    // Ensure the input is an array
+    if (!Array.isArray(arr)) {
+      throw new TypeError('Input must be an array');
+    }
+
+    // Process each element
+    return arr.map(item => {
+      // Check if the item is an array
+      if (Array.isArray(item)) {
+        // Join the elements of the inner array with a space and remove commas
+        return item.join('');
+      }
+      // If the item is not an array, return it directly as a string
+      return String(item); // Ensure numbers are converted to strings
+    }).join('\n'); // Join everything with new lines
+  }
+
 
   useEffect(() => {
     GetProblemList();
@@ -624,9 +656,7 @@ export default function Home() {
                     height="500px"
                     defaultLanguage="python"
                     theme='vs-dark'
-                    defaultValue={`def sort_array(nums):
-                      
-                      `}
+                    defaultValue={`# Write your Python code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
 
                 </div>
@@ -638,16 +668,16 @@ export default function Home() {
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
 
-                <Button  onClick={runCode} variant="secondary">Submit</Button>
+                <Button onClick={runCode} variant="secondary">Submit</Button>
 
 
 
               </div>
 
               <ResizablePanel>
-                <div className='bg-background text-muted-foreground py-3 px-4 max-h-[40vh] h-full overflow-auto'>
+                <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
 
-              
+
                   {showSkeleton &&
                     <div>
                       <Skeleton className="h-[20px] w-[180px] rounded-xl m-2" />
@@ -657,45 +687,52 @@ export default function Home() {
 
                   {(output?.length > 0 && !showSkeleton) && (
                     <div>
-                   <div className="flex items-center mb-2 gap-2">   <h1 className={`${Judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
-                      >{Judge0Response?.status.description}</h1>
-                      <span className='text-zinc-500 text-sm '>RunTime: {Judge0Response.time}</span></div>
-                      <Tabs  className="w-[400px]">
-                      {arrayData.map((item:any) => (
+                      <div className="flex items-center mb-2 gap-2">   <h1 className={`${judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
+                      >{judge0Response?.status.description}</h1>
+                        <span className='text-zinc-500 text-sm '>RunTime: {judge0Response?.time}</span></div>
+
+
+                      <Tabs value={activeTab} className="w-[400px]" onValueChange={setActiveTab}>
+
                         <TabsList>
-                           <TabsTrigger key={item.case} value={`${item.case}`}>
-                             {item.case}
-                             </TabsTrigger>
-                             </TabsList>
-                      ))}
-                      {arrayData.map((item:any) => (
-                              <TabsContent key={item.case} value={`${item.case}`}>
-                                <div>
-                                <label className='text-zinc-500'>Input</label>
-                                <div>
-                                  {item.input}
-                                </div>
-                                </div>
-                                <div>
-                                <label className='text-zinc-500'>Output</label>
-                                <div>
-                                {item.output}
-                                </div>
-                                </div>
-                                <div>
-                            <label className='text-zinc-500'>Expected</label>
-                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
-                              <div>
-                              {item.expectedOutput}
+                          {ProblemCaseStudy?.examples.map((problem: any, id: any) => (
+                            <TabsTrigger value={`case ${id + 1}`} key={id}>
+                              {console.log(problem.output, problem.result)}
+                              {problem.result == processArrayWithoutSpaces(problem.output) ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
+                              case {id + 1}</TabsTrigger>
+                          ))}
+                        </TabsList>
+                        {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
+                          <TabsContent key={id} value={`case ${id + 1}`}>
+                            <div>
+                              <label className='text-zinc-500'>Input</label>
+                              <div className='bg-muted rounded-lg w-full p-2 mt-1'>
+                                {testCase.input}
                               </div>
                             </div>
-                          </div>
-                              </TabsContent>
-                            ))}
-                  </Tabs>
+                            <div>
+                              <label className='text-zinc-500'>Output</label>
+                              <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                                {testCase?.result}
+                              </div>
+                            </div>
+                            <div>
+                              <label className='text-zinc-500'>Expected</label>
+                              <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                                <div>
+                                  {testCase.output}
+                                </div>
+                              </div>
+                            </div>
+                          </TabsContent>
+                        ))}
+                      </Tabs>
+
+
+
                     </div>)}
 
-                    {(outputError?.length > 0 && !showSkeleton) && (
+                  {(outputError?.length > 0 && !showSkeleton) && (
                     <>
                       <Alert variant="destructive" className='mb-4 bg-red-200'>
                         <AlertCircle className="h-4 w-4" />

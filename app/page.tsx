@@ -694,7 +694,7 @@ else:
                           <pre>{outputError}</pre>
                         </AlertDescription>
                       </Alert>
-                      {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
+                      {/* {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
 
                         <div key={id}>
                           <label className='text-zinc-500'>Expected</label>
@@ -705,6 +705,18 @@ else:
                           </div>
                         </div>
 
+                      ))} */}
+                      {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
+                        id === 0 && ( // Render only for the first element
+                          <div key={id}>
+                            <label className='text-zinc-500'>Expected</label>
+                            <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                              <div>
+                                {testCase.output}
+                              </div>
+                            </div>
+                          </div>
+                        )
                       ))}
                     </>
                   )}

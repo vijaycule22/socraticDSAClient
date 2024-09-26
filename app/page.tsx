@@ -695,14 +695,16 @@ else:
                         </AlertDescription>
                       </Alert>
                       {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
-                        <>
+
+                        <div key={id}>
                           <label className='text-zinc-500'>Expected</label>
                           <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
                             <div>
                               {testCase.output}
                             </div>
                           </div>
-                        </>
+                        </div>
+
                       ))}
                     </>
                   )}

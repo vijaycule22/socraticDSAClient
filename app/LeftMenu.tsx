@@ -76,11 +76,16 @@ export default function LeftMenu(props: Props) {
                             <div key={problem.name} className="py-2 border-b border-zinc-600">
                                 <div className="flex justify-between items-center gap-3 cursor-pointer">
                                     <span className={`${props.selectedProblem == problem.name ? 'text-indigo-600' : 'text-muted-foreground'}`} onClick={() => onProblemSelectEvent(problem.name)}>{id + 1}. {problem.custom_name}</span>
-                                    <Badge
+                                    {/* <Badge
                                         variant={problem.difficulty === 'Easy' ? 'secondary' :
                                             problem.difficulty === 'Medium' ? 'default' : 'destructive'}
                                     >
                                         {problem.difficulty}
+                                    </Badge> */}
+                                    <Badge variant={'outline'}
+                                        className={problem.difficulty === 'Easy' ? 'bg-green-100 text-green-600 border-green-600 ml-2 h-6 ' :
+                                            problem.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600 border-yellow-600 ml-2 h-6 ' : 'bg-red-100 text-red-600 border-red-600 ml-2  h-6'}
+                                    >{problem.difficulty}
                                     </Badge>
                                 </div>
                             </div>

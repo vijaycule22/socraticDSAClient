@@ -451,9 +451,9 @@ else:
 
       <Navbar onApiKeyInputChange={apiInput} />
       <div className='px-3 py-1 flex body-height'>
-        <ResizablePanelGroup direction="horizontal" className='rounded-xl border'>
+        <ResizablePanelGroup direction="horizontal" className='rounded-xl'>
 
-          <ResizablePanel>
+          <ResizablePanel defaultSize={45} className='rounded-xl border'>
 
             <div className='bg-background p-2 border-b flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
@@ -497,9 +497,9 @@ else:
 
                     <h1 className="text-2xl font-bold text-foreground">{ProblemCaseStudy?.custom_name}
                     </h1>
-                    <Badge className='ml-2 h-8'
-                      variant={ProblemCaseStudy.difficulty === 'Easy' ? 'secondary' :
-                        ProblemCaseStudy.difficulty === 'Medium' ? 'default' : 'destructive'}
+                    <Badge variant={'outline'}
+                      className={ProblemCaseStudy.difficulty === 'Easy' ? 'bg-green-100 text-green-600 border-green-600 ml-2 h-8 px-4' :
+                        ProblemCaseStudy.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600 border-yellow-600 ml-2 h-8 px-4' : 'bg-red-100 text-red-600 border-red-600 ml-2 px-4 h-8'}
                     >
                       {ProblemCaseStudy.difficulty}
                     </Badge>
@@ -586,15 +586,15 @@ else:
           </ResizablePanel>
 
 
-          <ResizableHandle className='px-1' />
+          <ResizableHandle className='px-1 bg-zinc-950' withHandle />
 
 
-          <ResizablePanel>
+          <ResizablePanel defaultSize={55} className='rounded-xl '>
 
 
 
-            <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
-              <div className='py-2 mx-1 border-b flex'>
+            <div className='border bg-background text-muted-foreground border-black border-solid'>
+              <div className='py-2 px-1 border flex'>
                 <Select onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select Language" />
@@ -608,7 +608,7 @@ else:
               </div>
             </div>
             <ResizablePanelGroup direction="vertical" >
-              <ResizablePanel defaultSize={75} minSize={20}>
+              <ResizablePanel className=' border' defaultSize={75} minSize={20}>
                 <Editor
                   className='editor'
                   defaultLanguage="python"
@@ -620,12 +620,12 @@ else:
 
               </ResizablePanel>
 
-              <div className='flex justify-end p-2 gap-2 bg-background border-b'>
+              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-2 gap-2 bg-background border'>
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
                 <Button onClick={runCode} variant="secondary">Submit</Button>
               </div>
-              <ResizableHandle className='py-1' onDragging={() => setOutputWindowSize(20)} />
-              <ResizablePanel minSize={outputWindowSize} defaultSize={20} >
+              <ResizableHandle className='py-1 bg-zinc-950' withHandle onDragging={() => setOutputWindowSize(20)} />
+              <ResizablePanel className='rounded-xl border' minSize={outputWindowSize} defaultSize={20} >
                 <div className='bg-background text-muted-foreground py-2 px-4  h-full overflow-auto'>
 
 

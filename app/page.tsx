@@ -455,7 +455,7 @@ else:
 
           <ResizablePanel defaultSize={45} className='rounded-xl border'>
 
-            <div className='bg-zinc-800 p-2 border-b flex items-center'>
+            <div className='bg-zinc-800 p-1 border-b flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
 
               <TooltipProvider>
@@ -594,7 +594,7 @@ else:
 
 
             <div className='border bg-zinc-800 text-muted-foreground '>
-              <div className='py-2 px-1 border flex'>
+              <div className='p-1 border flex'>
                 <Select onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select Language" />
@@ -613,14 +613,10 @@ else:
                   className='editor'
                   defaultLanguage="python"
                   theme='vs-dark'
-                  defaultValue={`# Write your Python code here`}
                   onMount={(editor) => (editorRef.current = editor)} />
-
-
-
               </ResizablePanel>
 
-              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-2 gap-2 bg-zinc-800 border'>
+              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-1 gap-2 bg-zinc-800 border'>
                 <Button onClick={runCode} variant="outline"><Play size={'16px'} className='mr-2 ' />Run Code</Button>
                 <Button onClick={runCode} variant="outline"><CloudUpload size={'16px'} className='mr-2 ' />Submit</Button>
               </div>

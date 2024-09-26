@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select"
 
 
-import { AlertCircle, Brain, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Brain, ChevronLeft, ChevronRight, CloudUpload, Play } from 'lucide-react';
 
 
 import { Skeleton } from "@/components/ui/skeleton"
@@ -455,7 +455,7 @@ else:
 
           <ResizablePanel defaultSize={45} className='rounded-xl border'>
 
-            <div className='bg-background p-2 border-b flex items-center'>
+            <div className='bg-zinc-800 p-2 border-b flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
 
               <TooltipProvider>
@@ -593,7 +593,7 @@ else:
 
 
 
-            <div className='border bg-background text-muted-foreground border-black border-solid'>
+            <div className='border bg-zinc-800 text-muted-foreground '>
               <div className='py-2 px-1 border flex'>
                 <Select onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-[180px]">
@@ -620,9 +620,9 @@ else:
 
               </ResizablePanel>
 
-              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-2 gap-2 bg-background border'>
-                <Button onClick={runCode} variant="secondary">Run Code</Button>
-                <Button onClick={runCode} variant="secondary">Submit</Button>
+              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-2 gap-2 bg-zinc-800 border'>
+                <Button onClick={runCode} variant="outline"><Play size={'16px'} className='mr-2 ' />Run Code</Button>
+                <Button onClick={runCode} variant="outline"><CloudUpload size={'16px'} className='mr-2 ' />Submit</Button>
               </div>
               <ResizableHandle className='py-1 bg-zinc-950' withHandle onDragging={() => setOutputWindowSize(20)} />
               <ResizablePanel className='rounded-xl border' minSize={outputWindowSize} defaultSize={20} >

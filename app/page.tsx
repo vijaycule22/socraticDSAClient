@@ -318,6 +318,7 @@ else:
       setProblemCaseStudy(data);
       setOutputWindowSize(25);
       closeSheet();
+      setJudge0Response(undefined);
       let problem = data?.examples;
       let inputArray: any[] = [];
       let outputArray: any[] = [];
@@ -329,7 +330,7 @@ else:
         prepareBoilerPlateCode += data?.end || "";
 
         editorRef.current?.setValue(prepareBoilerPlateCode);
-        setJudge0Response(undefined);
+
 
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
@@ -681,7 +682,8 @@ else:
 
                     </div>)}
 
-                  {(outputError?.length > 0 && !showSkeleton) && (
+
+                  {(outputError?.length > 0 && !showSkeleton && judge0Response) && (
                     <>
                       <h1 className={`${judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
                       >{judge0Response?.status.description}</h1>
@@ -704,6 +706,7 @@ else:
                       ))}
                     </>
                   )}
+
                 </div>
               </ResizablePanel>
 

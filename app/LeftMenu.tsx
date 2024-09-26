@@ -41,7 +41,6 @@ export default function LeftMenu(props: Props) {
     )
 
     const closeSheet = () => {
-        console.log('Sheet closed');
         setIsOpen(false);
     };
 

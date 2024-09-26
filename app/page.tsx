@@ -104,6 +104,7 @@ export default function Home() {
   const [judge0Response, setJudge0Response] = useState<Judge0Response>();
   const [testCasesInput, setTestCasesInput] = useState<any>([]);
   const [activeTab, setActiveTab] = useState("case 1");
+  const [outputWindowSize, setOutputWindowSize] = useState(20);
   let boilerPlateCode = `
 import sys
 import json
@@ -222,6 +223,7 @@ else:
 
         const subResult = await response.json();
         setJudge0Response(subResult);
+        setOutputWindowSize(50);
         setOutput(subResult.stdout);
         setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
         const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
@@ -314,7 +316,9 @@ else:
       }
       const data = await response.json();
       setProblemCaseStudy(data);
+      setOutputWindowSize(25);
       closeSheet();
+      setJudge0Response(undefined);
       let problem = data?.examples;
       let inputArray: any[] = [];
       let outputArray: any[] = [];
@@ -326,7 +330,7 @@ else:
         prepareBoilerPlateCode += data?.end || "";
 
         editorRef.current?.setValue(prepareBoilerPlateCode);
-        setJudge0Response(undefined);
+
 
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
@@ -410,6 +414,13 @@ else:
     ).join('\n');
   }
 
+  function reverseOutResult(line: any) {
+    // Split the line into an array of numbers
+    const numbers = line.split(' ').filter((num: any) => num); // Filter out any empty strings
+    // Join the numbers with commas and wrap in brackets
+    return `[${numbers.join(',')}]`;
+  }
+
 
   const handleChatMenuOpen = () => {
     setIsChatOpen(true)
@@ -440,7 +451,7 @@ else:
 
       <Navbar onApiKeyInputChange={apiInput} />
       <div className='px-3 py-1 flex body-height'>
-        <ResizablePanelGroup direction="horizontal">
+        <ResizablePanelGroup direction="horizontal" className='rounded-xl border'>
 
           <ResizablePanel>
 
@@ -580,45 +591,42 @@ else:
 
           <ResizablePanel>
 
-            <ResizablePanelGroup direction="vertical">
-              <ResizablePanel>
-                <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
-                  <div className='py-2 mx-1 border-b flex'>
-                    <Select onValueChange={handleLanguageChange}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select Language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map((language: language) => (
-                          <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
 
-                  <Editor
-                    height="500px"
-                    defaultLanguage="python"
-                    theme='vs-dark'
-                    defaultValue={`# Write your Python code here`}
-                    onMount={(editor) => (editorRef.current = editor)} />
-                </div>
+
+            <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
+              <div className='py-2 mx-1 border-b flex'>
+                <Select onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((language: language) => (
+                      <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <ResizablePanelGroup direction="vertical" >
+              <ResizablePanel defaultSize={75} minSize={20}>
+                <Editor
+                  className='editor'
+                  defaultLanguage="python"
+                  theme='vs-dark'
+                  defaultValue={`# Write your Python code here`}
+                  onMount={(editor) => (editorRef.current = editor)} />
+
 
 
               </ResizablePanel>
-              <ResizableHandle className='py-1' />
+
               <div className='flex justify-end p-2 gap-2 bg-background border-b'>
-
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
-
                 <Button onClick={runCode} variant="secondary">Submit</Button>
-
-
-
               </div>
-
-              <ResizablePanel>
-                <div className='bg-background text-muted-foreground py-2 px-4 max-h-[40vh] h-full overflow-auto'>
+              <ResizableHandle className='py-1' onDragging={() => setOutputWindowSize(20)} />
+              <ResizablePanel minSize={outputWindowSize} defaultSize={20} >
+                <div className='bg-background text-muted-foreground py-2 px-4  h-full overflow-auto'>
 
 
                   {showSkeleton &&
@@ -640,7 +648,7 @@ else:
                         <TabsList>
                           {ProblemCaseStudy?.examples.map((problem: any, id: any) => (
                             <TabsTrigger value={`case ${id + 1}`} key={id}>
-                              {problem.result == problem.output ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
+                              {reverseOutResult(problem?.result) == problem.output ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
                               case {id + 1}</TabsTrigger>
                           ))}
                         </TabsList>
@@ -655,7 +663,7 @@ else:
                             <div>
                               <label className='text-zinc-500'>Output</label>
                               <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
-                                {testCase?.result}
+                                {reverseOutResult(testCase?.result)}
                               </div>
                             </div>
                             <div>
@@ -674,8 +682,11 @@ else:
 
                     </div>)}
 
-                  {(outputError?.length > 0 && !showSkeleton) && (
+
+                  {(outputError?.length > 0 && !showSkeleton && judge0Response) && (
                     <>
+                      <h1 className={`${judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
+                      >{judge0Response?.status.description}</h1>
                       <Alert variant="destructive" className='mb-4 bg-red-200'>
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>Error</AlertTitle>
@@ -683,8 +694,19 @@ else:
                           <pre>{outputError}</pre>
                         </AlertDescription>
                       </Alert>
+                      {ProblemCaseStudy?.examples.map((testCase: any, id: any) => (
+                        <>
+                          <label className='text-zinc-500'>Expected</label>
+                          <div className='bg-muted rounded-lg w-full p-2 mt-1 mb-3'>
+                            <div>
+                              {testCase.output}
+                            </div>
+                          </div>
+                        </>
+                      ))}
                     </>
                   )}
+
                 </div>
               </ResizablePanel>
 
@@ -693,10 +715,10 @@ else:
           </ResizablePanel>
 
         </ResizablePanelGroup>
-      </div>
+      </div >
 
       {/* <ChatPopup /> */}
-      <ChatMenu isOpen={isChatOpen} onOpen={handleChatMenuOpen} onClose={handleChatMenuClose} onSendMessage={handleSendMessage} recentResponseFromAi={text_output} messages={chatMessages} />
-    </div>
+      < ChatMenu isOpen={isChatOpen} onOpen={handleChatMenuOpen} onClose={handleChatMenuClose} onSendMessage={handleSendMessage} recentResponseFromAi={text_output} messages={chatMessages} />
+    </div >
   );
 }

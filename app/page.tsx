@@ -104,6 +104,21 @@ export default function Home() {
   const [judge0Response, setJudge0Response] = useState<Judge0Response>();
   const [testCasesInput, setTestCasesInput] = useState<any>([]);
   const [activeTab, setActiveTab] = useState("case 1");
+  let boilerPlateCode = `
+import sys
+import json
+# Reading input from stdin
+input_data = sys.stdin.read().splitlines()
+# If there's only one line, parse that as a single test case
+if len(input_data) == 1:
+    nums = json.loads(input_data[0])
+    print(sort_array(nums))
+else:
+    # Handle multiple test cases
+    for line in input_data:
+        nums = json.loads(line)
+        print(sort_array(nums))
+`;
 
 
   const sampleCode = `
@@ -127,11 +142,12 @@ export default function Home() {
     ]
   }
 
-
+  useEffect(() => {
+    GetProblemList();
+  }, []);
 
   // Function to dynamically close the sheet
   const closeSheet = () => {
-    console.log('Sheet closed');
     setIsOpen(false);
   };
 
@@ -218,14 +234,13 @@ export default function Home() {
           parseResponse(subResult);
         }
 
-      }, 2000)
+      }, 3000)
     } catch (error) {
       console.error('Error running code:', error);
     }
   };
 
   const apiInput = (event: any) => {
-    console.log(event)
     setBaseURL(event.data.baseURL);
     setApiKeyInput(event.data.apiKeyInput);
     setHostInput(event.data.apiHostInput);
@@ -243,7 +258,6 @@ export default function Home() {
   const openApiChat = async (errorRequest: any) => {
     try {
       const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
-      console.log(res.data);
       setChatMessages(prevMessages => [
         ...prevMessages,
         { role: 'system', content: res.data.text_output, read: false }
@@ -254,28 +268,18 @@ export default function Home() {
     catch (error) {
       console.log(error);
     }
-
   }
 
-  useEffect(() => {
-    console.log(arrayData);
-  }
-    , [arrayData]);
 
   const parseResponse = async (response: any) => {
     const stdout = response.stdout;
     const lines = stdout.split('\n'); // Split by newline
-
 
     console.log("lines:", lines);
 
     ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
       testCase.result = lines[id];
     });
-
-
-
-
   }
 
 
@@ -289,7 +293,6 @@ export default function Home() {
       });
       const data = await response.json();
       setProblem(data);
-      console.log("problems:" + data)
 
       await OnSelectProblem(data[0].name);
     } catch (error) {
@@ -315,15 +318,22 @@ export default function Home() {
       let problem = data?.examples;
       let inputArray: any[] = [];
       let outputArray: any[] = [];
-      let value: any;
+      let prepareBoilerPlateCode: any;
 
       if (problem) {
+        prepareBoilerPlateCode = data?.start || "";
+        prepareBoilerPlateCode += `\n\n\n\n`;
+        prepareBoilerPlateCode += data?.end || "";
+
+        editorRef.current?.setValue(prepareBoilerPlateCode);
+        setJudge0Response(undefined);
+
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
           const output: any[] = element["output"];
-          console.log(input)
+
           setTestCasesInput((prev: any) => [...prev, input]);
-          console.log(output)
+
           if (input.length > 1) {
             input.forEach((item: any) => {
               inputArray.push(item);
@@ -331,31 +341,41 @@ export default function Home() {
           } else {
             inputArray.push(input[0]);
           }
+
+
           let myOutput = [output];
+
+          // if (Array.isArray(myOutput)) {
+          //   if (myOutput.length > 1) {
+          //     myOutput.forEach((item: any) => {
+          //       outputArray.push(item);
+          //     });
+          //   } else {
+          //     outputArray.push(myOutput[0]);
+          //   }
+          // } else {
+          //   outputArray.push(myOutput);
+          // }
           if (Array.isArray(myOutput)) {
-            if (myOutput.length > 1) {
-              myOutput.forEach((item: any) => {
-                outputArray.push(item);
-              });
-            } else {
-              outputArray.push(myOutput[0]);
-            }
+            outputArray.push(...myOutput);
           } else {
             outputArray.push(myOutput);
           }
         });
 
-        let myResult = processArray(inputArray);
 
-        let myOutput = processArrayWithoutSpaces(outputArray);
+        let myResult = processInputArray(inputArray);
 
-        ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
-          testCase.expected_Result = myOutput;
-        });
+        let myOutput = processExpectedOutput(outputArray);
+
+        // ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
+        //   testCase.expected_Result = myOutput;
+        // });
 
         const result = `${problem.length}\n${myResult}`
-        console.log("stdin:", result);
-        console.log("expected_output:", myOutput);
+        console.log("modified input for stdin", result);
+        console.log("modified ouput for expected output:", myOutput);
+
         setStdin(result);
         setExpectedOutput(myOutput);
 
@@ -366,23 +386,8 @@ export default function Home() {
     }
   };
 
-  //   function processArray(arr: any[]) {
-  //     // Ensure arr is an array
-  //     if (!Array.isArray(arr)) {
-  //         throw new TypeError('Input must be an array');
-  //     }
 
-  //     // Process each element in the array
-  //     return arr.map(item => {
-  //         // Check if the item is array-like (contains commas, treating it like a string representing an array)
-  //         if (typeof item === 'string' && item.includes(',')) {
-  //             return item.replace(/,/g, ' '); // Replace commas with spaces
-  //         }
-  //         return item; // If not array-like, return the item as it is
-  //     }).join('\n'); // Join everything with new lines
-  // }
-
-  function processArray(arr: any[]): string {
+  function processInputArray(arr: any[]): string {
     // Ensure the input is an array
     if (!Array.isArray(arr)) {
       throw new TypeError('Input must be an array');
@@ -390,43 +395,21 @@ export default function Home() {
 
     // Process each element
     return arr.map(item => {
-      // Check if the item is an array
       if (Array.isArray(item)) {
-        // Join the elements of the inner array with a space and remove commas
         return item.join(' ');
       }
-      // If the item is not an array, return it directly as a string
-      return String(item); // Ensure numbers are converted to strings
-    }).join('\n'); // Join everything with new lines
-  }
-  function processArrayWithoutSpaces(arr: any[]): string {
-    // Ensure the input is an array
-    if (!Array.isArray(arr)) {
-      throw new TypeError('Input must be an array');
-    }
 
-    // Process each element
-    return arr.map(item => {
-      // Check if the item is an array
-      if (Array.isArray(item)) {
-        // Join the elements of the inner array with a space and remove commas
-        return item.join('');
-      }
-      // If the item is not an array, return it directly as a string
-      return String(item); // Ensure numbers are converted to strings
-    }).join('\n'); // Join everything with new lines
+      return String(item);
+    }).join('\n');
   }
 
 
-  useEffect(() => {
-    GetProblemList();
-  }, []);
+  function processExpectedOutput(arrays: any[]): string {
+    return arrays.map((arr: any) =>
+      arr.replace(/[\[\],]/g, ' ').trim().replace(/\s+/g, ' ')
+    ).join('\n');
+  }
 
-  useEffect(() => {
-    console.log("Updated chatMessages:", chatMessages);
-
-
-  }, [chatMessages]);
 
   const handleChatMenuOpen = () => {
     setIsChatOpen(true)
@@ -438,7 +421,6 @@ export default function Home() {
   }
 
   const handleSendMessage = (inputMessage: string) => {
-    console.log(inputMessage);
     if (inputMessage.trim()) {
       setChatMessages(prevMessages => [
         ...prevMessages,
@@ -460,66 +442,44 @@ export default function Home() {
       <div className='px-3 py-1 flex body-height'>
         <ResizablePanelGroup direction="horizontal">
 
-          <ResizablePanel >
+          <ResizablePanel>
 
-            <div className='bg-background p-2 mb-1 flex items-center'>
+            <div className='bg-background p-2 border-b flex items-center'>
               <LeftMenu problemList={Problems} selectedProblem={ProblemCaseStudy} onProblemSelect={OnSelectProblem} />
+
               <TooltipProvider>
-
                 <Tooltip>
-
                   <TooltipTrigger asChild>
-
                     <Button className='ml-2 mr-1 text-muted-foreground' variant="outline">
-
                       <ChevronLeft />
-
                     </Button>
-
                   </TooltipTrigger>
-
                   <TooltipContent side="bottom" >
-
                     <span>Prev Question</span>
-
                   </TooltipContent>
-
                 </Tooltip>
-
               </TooltipProvider>
-
-
 
               <TooltipProvider>
-
                 <Tooltip>
-
                   <TooltipTrigger asChild>
-
                     <Button variant="outline" className='text-muted-foreground'>
-
                       <ChevronRight />
-
                     </Button>
-
                   </TooltipTrigger>
-
                   <TooltipContent side="bottom" >
-
                     <span>Next Question</span>
-
                   </TooltipContent>
-
                 </Tooltip>
-
               </TooltipProvider>
+
               <div>
               </div>
             </div>
 
             {ProblemCaseStudy != null ? (
 
-              <div className='bg-background p-4  round  overflow-auto scroll-height' key={ProblemCaseStudy?.name}>
+              <div className='bg-background p-4  round  overflow-auto scroll-height border-b' key={ProblemCaseStudy?.name}>
 
                 <div className="space-y-4 ">
                   <div className="flex justify-between items-center">
@@ -612,45 +572,29 @@ export default function Home() {
 
               </div>
             )}
-
-
-
           </ResizablePanel>
+
 
           <ResizableHandle className='px-1' />
 
+
           <ResizablePanel>
+
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel>
-
-
                 <div className='border-2 bg-background text-muted-foreground border-black border-solid'>
-
-                  <div className='my-2 mx-1 flex'>
-
+                  <div className='py-2 mx-1 border-b flex'>
                     <Select onValueChange={handleLanguageChange}>
-
                       <SelectTrigger className="w-[180px]">
-
                         <SelectValue placeholder="Select Language" />
-
                       </SelectTrigger>
-
                       <SelectContent>
-
                         {languages.map((language: language) => (
-
                           <SelectItem key={language.id} value={language.name}>{language.name}</SelectItem>
-
                         ))}
-
                       </SelectContent>
-
                     </Select>
-
                   </div>
-
-
 
                   <Editor
                     height="500px"
@@ -658,13 +602,12 @@ export default function Home() {
                     theme='vs-dark'
                     defaultValue={`# Write your Python code here`}
                     onMount={(editor) => (editorRef.current = editor)} />
-
                 </div>
 
 
               </ResizablePanel>
               <ResizableHandle className='py-1' />
-              <div className='flex justify-end p-2 gap-2 bg-background mb-1'>
+              <div className='flex justify-end p-2 gap-2 bg-background border-b'>
 
                 <Button onClick={runCode} variant="secondary">Run Code</Button>
 
@@ -685,20 +628,19 @@ export default function Home() {
                     </div>
                   }
 
-                  {(output?.length > 0 && !showSkeleton) && (
+                  {(output?.length > 0 && !showSkeleton && judge0Response) && (
                     <div>
                       <div className="flex items-center mb-2 gap-2">   <h1 className={`${judge0Response?.status.description === 'Accepted' ? 'text-green-500' : 'text-orange-500'} text-xl`}
                       >{judge0Response?.status.description}</h1>
                         <span className='text-zinc-500 text-sm '>RunTime: {judge0Response?.time}</span></div>
 
 
-                      <Tabs value={activeTab} className="w-[400px]" onValueChange={setActiveTab}>
+                      <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
 
                         <TabsList>
                           {ProblemCaseStudy?.examples.map((problem: any, id: any) => (
                             <TabsTrigger value={`case ${id + 1}`} key={id}>
-                              {console.log(problem.output, problem.result)}
-                              {problem.result == processArrayWithoutSpaces(problem.output) ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
+                              {problem.result == problem.output ? (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-green-500'></span>) : (<span className='h-[8px] w-[8px] mr-1 rounded-full bg-red-500'></span>)}
                               case {id + 1}</TabsTrigger>
                           ))}
                         </TabsList>

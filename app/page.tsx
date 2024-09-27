@@ -175,12 +175,23 @@ else:
   };
 
 
+  const onSubmitCode = async () => {
+    // const testCasesInput = ProblemCaseStudy?.allTestCases;
+
+    runCode(testCasesInput);
+  };
 
 
-  const runCode = async () => {
+
+  const runCode = async (allTestCases: any) => {
     try {
       setShowSkeleton(true);
       setOutput([]);
+
+      if (allTestCases) {
+        setStdin(allTestCases);
+      }
+
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
 
@@ -197,10 +208,10 @@ else:
           number_of_runs: null,
           stdin: stdin,
           expected_output: expected_output,
-          cpu_time_limit: null,
+          cpu_time_limit: 2,
           cpu_extra_time: null,
           wall_time_limit: null,
-          memory_limit: null,
+          memory_limit: 262144,
           stack_limit: null,
           max_processes_and_or_threads: null,
           enable_per_process_and_thread_time_limit: null,
@@ -419,6 +430,10 @@ else:
   }
 
   function reverseOutResult(line: any) {
+    //if line has number with space in between \n do below code if not return line
+    if (!line.includes(' ')) {
+      return line
+    }
     // Split the line into an array of numbers
     const numbers = line.split(' ').filter((num: any) => num); // Filter out any empty strings
     // Join the numbers with commas and wrap in brackets
@@ -620,9 +635,9 @@ else:
                   onMount={(editor) => (editorRef.current = editor)} />
               </ResizablePanel>
 
-              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-1 gap-2 bg-zinc-800 border'>
-                <Button onClick={runCode} variant="outline"><Play size={'16px'} className='mr-2 ' />Run Code</Button>
-                <Button onClick={runCode} variant="outline"><CloudUpload size={'16px'} className='mr-2 ' />Submit</Button>
+              <div className='flex justify-end rounded-bl-xl rounded-br-xl p-1 pr-4  gap-2 bg-zinc-800 border'>
+                <Button onClick={runCode} variant="outline"><Play size={'16px'} className='mr-2 ' />Run</Button>
+                <Button onClick={onSubmitCode} variant="outline" className='bg-muted'><CloudUpload size={'16px'} className='mr-2 ' />Submit</Button>
               </div>
               <ResizableHandle className='py-1 bg-zinc-950' withHandle onDragging={() => setOutputWindowSize(20)} />
               <ResizablePanel className='rounded-xl border' minSize={outputWindowSize} defaultSize={25} >

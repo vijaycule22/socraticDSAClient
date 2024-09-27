@@ -502,8 +502,8 @@ else:
                     <h1 className="text-2xl font-bold text-foreground">{ProblemCaseStudy?.custom_name}
                     </h1>
                     <Badge variant={'outline'}
-                      className={ProblemCaseStudy.difficulty === 'Easy' ? 'bg-green-100 text-green-600 border-green-600 ml-2 h-8 px-4' :
-                        ProblemCaseStudy.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600 border-yellow-600 ml-2 h-8 px-4' : 'bg-red-100 text-red-600 border-red-600 ml-2 px-4 h-8'}
+                      className={ProblemCaseStudy.difficulty === 'Easy' ? 'bg-muted text-green-600  ml-2 h-8 px-4' :
+                        ProblemCaseStudy.difficulty === 'Medium' ? 'bg-muted text-yellow-600  ml-2 h-8 px-4' : 'bg-muted text-red-600  ml-2 px-4 h-8'}
                     >
                       {ProblemCaseStudy.difficulty}
                     </Badge>

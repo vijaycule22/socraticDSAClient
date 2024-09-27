@@ -57,7 +57,7 @@ export default function LeftMenu(props: Props) {
                     <span >Toggle problem list</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-zinc-800">
+            <SheetContent side="left" className="w-[440px]  sm:w-[540px] bg-zinc-800 max-w-[440px] sheet-width">
                 <SheetHeader>
                     <SheetTitle>Problems</SheetTitle>
                 </SheetHeader>
@@ -83,8 +83,8 @@ export default function LeftMenu(props: Props) {
                                         {problem.difficulty}
                                     </Badge> */}
                                     <Badge variant={'outline'}
-                                        className={problem.difficulty === 'Easy' ? 'bg-green-100 text-green-600 border-green-600 ml-2 h-6 ' :
-                                            problem.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-600 border-yellow-600 ml-2 h-6 ' : 'bg-red-100 text-red-600 border-red-600 ml-2  h-6'}
+                                        className={problem.difficulty === 'Easy' ? 'bg-muted text-green-600  ml-2 h-6 ' :
+                                            problem.difficulty === 'Medium' ? 'bg-muted text-yellow-600 ml-2 h-6 ' : 'bg-muted text-red-600  ml-2  h-6'}
                                     >{problem.difficulty}
                                     </Badge>
                                 </div>

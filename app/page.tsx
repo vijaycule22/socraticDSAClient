@@ -105,6 +105,7 @@ export default function Home() {
   const [testCasesInput, setTestCasesInput] = useState<any>([]);
   const [activeTab, setActiveTab] = useState("case 1");
   const [outputWindowSize, setOutputWindowSize] = useState(20);
+  const [isLoading, setIsLoading] = useState(false);
   let boilerPlateCode = `
 import sys
 import json
@@ -259,7 +260,9 @@ else:
 
   const openApiChat = async (errorRequest: any) => {
     try {
+      setIsLoading(true);
       const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
+      setIsLoading(false);
       setChatMessages(prevMessages => [
         ...prevMessages,
         { role: 'system', content: res.data.text_output, read: false }
@@ -268,6 +271,7 @@ else:
       setCodeOutput(res.data.code_output);
     }
     catch (error) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -621,7 +625,7 @@ else:
                 <Button onClick={runCode} variant="outline"><CloudUpload size={'16px'} className='mr-2 ' />Submit</Button>
               </div>
               <ResizableHandle className='py-1 bg-zinc-950' withHandle onDragging={() => setOutputWindowSize(20)} />
-              <ResizablePanel className='rounded-xl border' minSize={outputWindowSize} defaultSize={20} >
+              <ResizablePanel className='rounded-xl border' minSize={outputWindowSize} defaultSize={25} >
                 <div className='bg-background text-muted-foreground py-2 px-4  h-full overflow-auto'>
 
 
@@ -728,7 +732,7 @@ else:
       </div >
 
       {/* <ChatPopup /> */}
-      < ChatMenu isOpen={isChatOpen} onOpen={handleChatMenuOpen} onClose={handleChatMenuClose} onSendMessage={handleSendMessage} recentResponseFromAi={text_output} messages={chatMessages} />
+      < ChatMenu isOpen={isChatOpen} onOpen={handleChatMenuOpen} onClose={handleChatMenuClose} onSendMessage={handleSendMessage} recentResponseFromAi={text_output} isLoading={isLoading} messages={chatMessages} />
     </div >
   );
 }

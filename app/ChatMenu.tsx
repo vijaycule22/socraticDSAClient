@@ -20,9 +20,10 @@ interface AIHelpPopupProps {
     onSendMessage: (message: string) => void
     messages: Message[]
     recentResponseFromAi?: string
+    isLoading?: boolean
 }
 
-export default function ChatMenu({ isOpen, onOpen, onClose, onSendMessage, messages = [], recentResponseFromAi }: AIHelpPopupProps) {
+export default function ChatMenu({ isOpen, onOpen, onClose, onSendMessage, messages = [], recentResponseFromAi, isLoading }: AIHelpPopupProps) {
     const [inputMessage, setInputMessage] = useState('')
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null)
@@ -77,10 +78,29 @@ export default function ChatMenu({ isOpen, onOpen, onClose, onSendMessage, messa
                 <PopoverTrigger asChild>
                     <Button
                         onClick={handleOpen}
-                        className="fixed bottom-7 right-6 rounded-full z-50 bg-gray-700 hover:bg-gray-600 text-white"
+                        className="fixed bottom-7 h-12 w-12 right-6 rounded-full z-50 shadow-xl border bg-gray-600 hover:bg-gray-700 text-white"
                         size="icon"
                     >
-                        <Brain className="h-5 w-5" />
+                        {isLoading ? (
+                            <div className="relative inline-block">
+                                <Brain className="h-7 w-7 text-primary animate-pulse" />
+                                <div className="absolute inset-0 animate-ping-slow">
+                                    <Brain className="h-7 w-7 text-primary opacity-75" />
+                                </div>
+                                <div className="absolute -top-5 -right-5 w-7 h-7">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                                        <path d="M3 13.5C3 17.0899 5.91015 20 9.5 20H13.5C17.0899 20 20 17.0899 20 13.5C20 9.91015 17.0899 7 13.5 7H9.5C5.91015 7 3 9.91015 3 13.5Z" fill="#dbdbd7" stroke="currentColor" strokeWidth="1" />
+                                        <circle className="animate-loading-dot" cx="8" cy="13" r="1.5" fill="black" />
+                                        <circle className="animate-loading-dot animation-delay-300" cx="12" cy="13" r="1.5" fill="black" />
+                                        <circle className="animate-loading-dot animation-delay-600" cx="16" cy="13" r="1.5" fill="black" />
+                                    </svg>
+                                </div>
+                            </div>
+                        ) : (
+                            <Brain className="h-7 w-7" />
+                        )}
+
+
                         {unreadCount > 0 && (
                             <Badge className="absolute -top-2 -right-2 px-2 py-1 text-xs font-bold rounded-full bg-red-500 text-white">
                                 {unreadCount}

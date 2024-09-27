@@ -44,11 +44,11 @@
 
 
 .body-height{
-  height: calc(100vh - 89px);
+  height: calc(100vh - 65px);
 }
 
 .scroll-height{
-  height: calc(100vh - 154px);
+  height: calc(100vh - 122px);
   overflow: auto;
 }
 
@@ -75,3 +75,42 @@
 }
 
 
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 1.5s cubic-bezier(0, 0, 0.4, 1) infinite;
+}
+
+@keyframes loading-dot {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-loading-dot {
+  animation: loading-dot 1.5s infinite;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}

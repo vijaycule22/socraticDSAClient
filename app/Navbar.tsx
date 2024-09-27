@@ -74,7 +74,7 @@ const Navbar = (props: Props) => {
   // }
 
   return (
-    <header className="flex items-center justify-between text-foreground bg-zinc-950 p-4 border-b border-input shadow-sm">
+    <header className="flex items-center justify-between text-foreground bg-zinc-950 py-2 px-4  shadow-sm">
       <div className="flex items-center gap-2">
         <Brain className="h-7 w-7" />
         <h1 className="text-2xl font-bold text-popover-foreground opacity-90">Socratic DSA.</h1>

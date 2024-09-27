@@ -114,3 +114,7 @@
 .animation-delay-600 {
   animation-delay: 600ms;
 }
+
+.sheet-width{
+  max-width: 440px !important;
+}

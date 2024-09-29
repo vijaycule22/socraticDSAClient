@@ -106,6 +106,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("case 1");
   const [outputWindowSize, setOutputWindowSize] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
+  const [randomArray, setRandomArray] = useState<number[]>([]);
+  const [SortedArray,setSortedArray] = useState<number[]>([]);
   let boilerPlateCode = `
 import sys
 import json
@@ -146,7 +148,33 @@ else:
 
   useEffect(() => {
     GetProblemList();
+   // GenerateRandomArray();
   }, []);
+
+
+function seededRandom(seed:any) {
+  // Linear Congruential Generator (LCG) constants
+  const m = 0x80000000; // 2^31
+  const a = 1103515245;
+  const c = 12345;
+
+  seed = (seed * a + c) % m;
+  return seed / (m - 1);
+}
+
+
+// Function to create an array of random integers
+function generateRandomArray(size:any, seed:any,min:any, max:any) {
+  const randomArray = [];
+  let currentSeed = seed;
+  for (let i = 0; i < size; i++) {
+    currentSeed = (currentSeed * 1103515245 + 12345) & 0x7fffffff; // LCG formula
+    const randomValue = min + (currentSeed % (max - min + 1)); // scale to desired range
+
+    randomArray.push(Math.floor(seededRandom(seed + i) * 100)); // Generating integers between 0-99
+  }
+  return randomArray;
+}
 
   // Function to dynamically close the sheet
   const closeSheet = () => {
@@ -176,20 +204,21 @@ else:
 
 
   const onSubmitCode = async () => {
-    // const testCasesInput = ProblemCaseStudy?.allTestCases;
-
-    runCode(testCasesInput);
+   
+   // await getTestcasesData("sort_an_array");
+   // runCode(testCasesInput);
+   await OnSubmitAsync(testCasesInput)
+  
   };
 
-
-
-  const runCode = async (allTestCases: any) => {
+  const OnSubmitAsync = async (allTestCases: any) => {
     try {
       setShowSkeleton(true);
       setOutput([]);
+     
 
       if (allTestCases) {
-        setStdin(allTestCases);
+        //setStdin(allTestCases);
       }
 
       const code = editorRef.current?.getValue() || '';
@@ -208,10 +237,194 @@ else:
           number_of_runs: null,
           stdin: stdin,
           expected_output: expected_output,
-          cpu_time_limit: 2,
+          cpu_time_limit: 1,
           cpu_extra_time: null,
           wall_time_limit: null,
-          memory_limit: 262144,
+          memory_limit: 12000,
+          stack_limit: null,
+          max_processes_and_or_threads: null,
+          enable_per_process_and_thread_time_limit: null,
+          enable_per_process_and_thread_memory_limit: null,
+          max_file_size: null,
+          enable_network: null
+        }),
+      });
+
+      const result = await response.json();
+      //wait for 3 sec and call another api
+      setTimeout(async () => {
+        const response: any = await fetch(`${baseURL}/submissions/${result.token}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-rapidapi-host': apiHostInput,
+            'x-rapidapi-key': apiKeyInput
+          },
+        });
+
+        const subResult = await response.json();
+       // setJudge0Response(subResult);
+        setOutputWindowSize(50);
+       // setOutput(subResult.stdout);
+      //  setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
+      // const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
+        // if (isErrorExist?.length > 0) {
+        //   errorRequest.messages[1].content = String(isErrorExist);
+        //   openApiChat(errorRequest);
+        // }
+        // setShowSkeleton(false);
+        // if (subResult.stdout) {
+        //   parseResponse(subResult);
+        // }
+
+        if(subResult)
+          {
+            if(subResult.status.description != 'Accepted')
+            {
+              if(expected_output == subResult.stdout)
+              {
+                console.log("All Test cases are succeed");
+              }
+              else{
+                if(subResult.stdout !=null)
+                {
+                  let splitexpout = expected_output.split('\n');
+                  let splitstdout = subResult.stdout.split('\n');
+                  if(splitexpout[0] !=splitstdout[0])
+                  {
+                    console.log("Test case 1 is Failed")
+                  }
+                  else if(splitexpout[1] !=splitstdout[1])
+                  {
+                    console.log("Test case 2 is Failed")
+                  }
+                  else{
+                    console.log("All Test cases are succeed");
+                  }
+                }
+                else{
+                  console.log(subResult.status.description)
+                }
+                
+              }
+            }
+            else{
+              console.log(subResult.status.description)
+            }
+          }
+        
+
+      }, 3000)
+    } catch (error) {
+      console.error('Error running code:', error);
+    }
+  };
+
+ const GenerateRandomArray= async()=>{
+
+  const seed = 10000;  // seed value
+  const size = 100000;  // array size
+  const min = -500;       // minimum value for random integers
+  const max = 15000;     // maximum value for random integers
+  const array = generateRandomArray(size, seed,min,max);
+  const randomarrayAsString = array.join(" ");
+  setRandomArray(array);
+  const sorted = array.sort((a, b) => a - b); // For descending use: (b - a)
+  setSortedArray(sorted);
+  const arrayAsString = sorted.join(" ");
+  const modifystdin = `2\n${randomarrayAsString}\n${randomarrayAsString}`;
+  const modifyexspteced = `2\n${arrayAsString}\n${arrayAsString}`;
+  setStdin(modifystdin);
+  setExpectedOutput(modifyexspteced);
+ }
+
+ const getTestcasesData = async (testcase_name:any) => {
+  testcase_name = 'sort_an_array';
+  const response = await fetch(`https://socraticdsa-server.onrender.com/test_cases/problem/${testcase_name}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  });
+  const data = await response.json();
+  console.log("testcase data",data);
+  if(data.length>0)
+  {
+    const multistid = `${data.length}`;
+    // let modifystdin ='';
+    // let modifyexspteced ='';
+    let input_paramsAsString='';
+    let modifyStdin = [];
+    let modifyExspteced = [];
+    data.forEach((element:any) => {
+      
+       if(element.input_params)
+       {
+        let inputarray = element.input_params.nums;
+        input_paramsAsString = inputarray.join(" ");
+        console.log("testcase data",input_paramsAsString)
+        // element.input_params.nums.foreach((item:any)=>
+        // {
+        //   input_paramsAsString = item.join(" ")
+        //   console.log("testcase data",input_paramsAsString)
+        // });
+      }
+      
+     const expected_resultAsString = element.expected_result;
+       const sorted = expected_resultAsString.sort((a:any, b:any) => a - b); // For descending use: (b - a)
+       const arrayAsString = sorted.join(" ");
+      
+       console.log("sorted data",arrayAsString);
+       modifyStdin.push(input_paramsAsString + '\n'); // Add a newline after the string
+       modifyExspteced.push(arrayAsString + '\n');  
+
+        // modifystdin += `\n${input_paramsAsString}`;
+        // modifyexspteced += `${arrayAsString}\n`;
+    });
+    // let finalstid = `${multistid}'\n'${modifystdin}`;
+    // let finalexpected = `${modifyexspteced}`;
+    
+
+    // console.log("finalstid",finalstid);
+    // console.log("finalexpected",finalexpected);
+
+    // setStdin(finalstid);
+    // setExpectedOutput(finalexpected);
+
+  
+  }
+}
+
+  const runCode = async (allTestCases: any) => {
+    try {
+      setShowSkeleton(true);
+      setOutput([]);
+     
+
+      if (allTestCases) {
+        //setStdin(allTestCases);
+      }
+
+      const code = editorRef.current?.getValue() || '';
+      const languageId = selectedLanguage?.id || '71';  // Default to Python 3 if no language selected
+
+      const response = await fetch(`${baseURL}/submissions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': apiHostInput,
+          'x-rapidapi-key': apiKeyInput
+        },
+        body: JSON.stringify({
+          source_code: code,
+          language_id: languageId,
+          number_of_runs: null,
+          stdin: stdin,
+          expected_output: expected_output,
+          cpu_time_limit: 1,
+          cpu_extra_time: null,
+          wall_time_limit: null,
+          memory_limit: 12000,
           stack_limit: null,
           max_processes_and_or_threads: null,
           enable_per_process_and_thread_time_limit: null,
@@ -334,6 +547,9 @@ else:
       setOutputWindowSize(25);
       closeSheet();
       setJudge0Response(undefined);
+      setStdin(undefined);
+      setExpectedOutput(undefined);
+
       let problem = data?.examples;
       let inputArray: any[] = [];
       let outputArray: any[] = [];
@@ -392,11 +608,13 @@ else:
         // });
 
         const result = `${problem.length}\n${myResult}`
+        const outputwithsifix = `${myOutput}\n`;
         console.log("modified input for stdin", result);
-        console.log("modified ouput for expected output:", myOutput);
+        console.log("modified ouput for expected output:", outputwithsifix);
+        
 
         setStdin(result);
-        setExpectedOutput(myOutput);
+        setExpectedOutput(outputwithsifix);
 
       }
       console.log("Problem details:", data);
@@ -424,6 +642,11 @@ else:
 
 
   function processExpectedOutput(arrays: any[]): string {
+    let parsedArrays = arrays.map(arr => arr.replace(/[\[\]]/g, '').split(',').map(Number));
+    // Replace the last element of the second array (index 1) with 5
+    if (parsedArrays[1]) {
+      parsedArrays[1][parsedArrays[1].length - 1] = 5;
+    }
     return arrays.map((arr: any) =>
       arr.replace(/[\[\],]/g, ' ').trim().replace(/\s+/g, ' ')
     ).join('\n');
@@ -751,3 +974,4 @@ else:
     </div >
   );
 }
+

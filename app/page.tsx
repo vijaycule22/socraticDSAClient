@@ -205,7 +205,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
 
   const onSubmitCode = async () => {
    
-   // await getTestcasesData("sort_an_array");
+    await getTestcasesData("sort_an_array");
    // runCode(testCasesInput);
    await OnSubmitAsync(testCasesInput)
   
@@ -263,20 +263,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
         });
 
         const subResult = await response.json();
-       // setJudge0Response(subResult);
         setOutputWindowSize(50);
-       // setOutput(subResult.stdout);
-      //  setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
-      // const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
-        // if (isErrorExist?.length > 0) {
-        //   errorRequest.messages[1].content = String(isErrorExist);
-        //   openApiChat(errorRequest);
-        // }
-        // setShowSkeleton(false);
-        // if (subResult.stdout) {
-        //   parseResponse(subResult);
-        // }
-
         if(subResult)
           {
             if(subResult.status.description != 'Accepted')
@@ -351,11 +338,10 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
   if(data.length>0)
   {
     const multistid = `${data.length}`;
-    // let modifystdin ='';
-    // let modifyexspteced ='';
+     let modifystdin ='';
+     let modifyexspteced ='';
     let input_paramsAsString='';
-    let modifyStdin = [];
-    let modifyExspteced = [];
+   
     data.forEach((element:any) => {
       
        if(element.input_params)
@@ -363,37 +349,47 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
         let inputarray = element.input_params.nums;
         input_paramsAsString = inputarray.join(" ");
         console.log("testcase data",input_paramsAsString)
-        // element.input_params.nums.foreach((item:any)=>
-        // {
-        //   input_paramsAsString = item.join(" ")
-        //   console.log("testcase data",input_paramsAsString)
-        // });
+        
       }
       
      const expected_resultAsString = element.expected_result;
        const sorted = expected_resultAsString.sort((a:any, b:any) => a - b); // For descending use: (b - a)
        const arrayAsString = sorted.join(" ");
       
-       console.log("sorted data",arrayAsString);
-       modifyStdin.push(input_paramsAsString + '\n'); // Add a newline after the string
-       modifyExspteced.push(arrayAsString + '\n');  
-
-        // modifystdin += `\n${input_paramsAsString}`;
-        // modifyexspteced += `${arrayAsString}\n`;
+        modifystdin += `\n${input_paramsAsString}`;
+        modifyexspteced += `${arrayAsString}\n`;
     });
-    // let finalstid = `${multistid}'\n'${modifystdin}`;
-    // let finalexpected = `${modifyexspteced}`;
+    let finalstid = `${multistid}${modifystdin}`;
+    let finalexpected = `${modifyexspteced}`;
     
 
     // console.log("finalstid",finalstid);
     // console.log("finalexpected",finalexpected);
 
+    handleStdinAndExpectedOutput(finalstid,finalexpected)
+    // setStdin(undefined);
+    // setExpectedOutput(undefined);
+
     // setStdin(finalstid);
     // setExpectedOutput(finalexpected);
 
-  
   }
 }
+
+const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
+  setStdin(undefined);
+  setExpectedOutput(undefined);
+
+  
+  console.log("stdin",stdin)
+  console.log("expected_output",expected_output)
+
+  setStdin(finalstid); // Set new value
+  setExpectedOutput(finalexpected);
+
+  console.log("finalstid",stdin)
+  console.log("finalexpected",expected_output)
+};
 
   const runCode = async (allTestCases: any) => {
     try {
@@ -579,18 +575,6 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
 
 
           let myOutput = [output];
-
-          // if (Array.isArray(myOutput)) {
-          //   if (myOutput.length > 1) {
-          //     myOutput.forEach((item: any) => {
-          //       outputArray.push(item);
-          //     });
-          //   } else {
-          //     outputArray.push(myOutput[0]);
-          //   }
-          // } else {
-          //   outputArray.push(myOutput);
-          // }
           if (Array.isArray(myOutput)) {
             outputArray.push(...myOutput);
           } else {
@@ -645,10 +629,13 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
     let parsedArrays = arrays.map(arr => arr.replace(/[\[\]]/g, '').split(',').map(Number));
     // Replace the last element of the second array (index 1) with 5
     if (parsedArrays[1]) {
-      parsedArrays[1][parsedArrays[1].length - 1] = 5;
+      parsedArrays[1][parsedArrays[1].length - 1] = 10;
     }
-    return arrays.map((arr: any) =>
-      arr.replace(/[\[\],]/g, ' ').trim().replace(/\s+/g, ' ')
+    // return parsedArrays.map((arr: any) =>
+    //   arr.replace(/[\[\],]/g, ' ').trim().replace(/\s+/g, ' ')
+    // ).join('\n');
+    return parsedArrays.map(arr =>
+      arr.join(' ').trim()
     ).join('\n');
   }
 

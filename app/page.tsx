@@ -286,7 +286,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
         });
 
         const subResult = await response.json();
-        console.log("subResult",subResult);
+        console.log("BATCH_RESULT",subResult);
         // setJudge0Response(subResult);
         // setOutputWindowSize(50);
         // setOutput(subResult.stdout);
@@ -422,6 +422,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
  }
 
  const getTestcasesData = async (testcase_name:any) => {
+  setBatchTestCases([]);
   testcase_name = 'sort_an_array';
   const response = await fetch(`https://socraticdsa-server.onrender.com/test_cases/problem/${testcase_name}`, {
     method: 'GET',

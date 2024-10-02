@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+motor
+pydantic
+pydantic_settings
+sentry-sdk
+aioredis
+slowapi
+fastapi-jwt-auth
+fastapi-cors
+gunicorn
+python-dotenv
+pytest
+httpx
+starlette
+httpx 
+python-dotenv

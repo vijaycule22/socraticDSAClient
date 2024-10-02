@@ -8,7 +8,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { CodeBlock } from './CodeBlock'
 
 interface Message {
-    role: 'user' | 'system'
+    role: 'user' | 'system' | 'Assistant'
     content: string
     read: boolean
 }

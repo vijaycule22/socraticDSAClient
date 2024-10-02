@@ -83,7 +83,7 @@ export default function Home() {
   const [output, setOutput] = useState<any[]>([]);
   const [outputError, setOutputError] = useState([]);
   const [languages, setLanguages] = useState([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<language>(languages[0]); // State to store the selected language
+  const [selectedLanguage, setSelectedLanguage] = useState<language | undefined>(undefined); // State to store the selected language
   const [apiKeyInput, setApiKeyInput] = useState<string>('dc95dd8dc9mshf855b8e4af02affp1d0291jsn618623af494a');
   const [apiHostInput, setHostInput] = useState<string>('judge0-ce.p.rapidapi.com');
   const [baseURL, setBaseURL] = useState<string>('https://judge0-ce.p.rapidapi.com');
@@ -108,6 +108,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [randomArray, setRandomArray] = useState<number[]>([]);
   const [SortedArray,setSortedArray] = useState<number[]>([]);
+  const [batchTestCases, setBatchTestCases] = useState<any[]>([]);
+interface Submission {
+  source_code: string | undefined;
+  language_id: string | undefined;
+  stdin: any;
+  expected_output: any;
+  cpu_time_limit: number;
+  cpu_extra_time: null;
+  wall_time_limit: null;
+  memory_limit: number;
+  stack_limit: null;
+  max_processes_and_or_threads: null;
+  enable_per_process_and_thread_time_limit: null;
+  enable_per_process_and_thread_memory_limit: null;
+  max_file_size: null;
+  enable_network: null;
+}
+
+let payloadForSubmissionBatch: { submissions: Submission[] } = {
+  "submissions": []
+}
+
+
   let boilerPlateCode = `
 import sys
 import json
@@ -195,7 +218,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
       const data = await response.json();
       setLanguages(data);
       if (data.length > 0) {
-        setSelectedLanguage(data[0].id); // Set default selected language to the first in the list
+        setSelectedLanguage(data[0]); // Set default selected language to the first in the list
       }
     } catch (error) {
       console.error('Error fetching languages:', error);
@@ -203,13 +226,86 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
   };
 
 
-  const onSubmitCode = async () => {
+  // const onSubmitCode = async () => {
    
-    await getTestcasesData("sort_an_array");
-   // runCode(testCasesInput);
-   await OnSubmitAsync(testCasesInput)
+  //   await getTestcasesData("sort_an_array");
+  //  // runCode(testCasesInput);
+  //  await OnSubmitAsync(testCasesInput)
   
-  };
+  // };
+
+
+  const onSubmitCode = async () => {
+    try {
+      const code = editorRef.current?.getValue() || '';
+      const languageId = selectedLanguage?.id || '71'; 
+      batchTestCases.forEach((testCase: any) => {
+        return payloadForSubmissionBatch.submissions.push({
+          source_code: editorRef.current?.getValue(),
+          language_id: languageId,
+          stdin: testCase.input,
+          expected_output: testCase.output,
+          cpu_time_limit: 1,
+          cpu_extra_time: null,
+          wall_time_limit: null,
+          memory_limit: 12000,
+          stack_limit: null,
+          max_processes_and_or_threads: null,
+          enable_per_process_and_thread_time_limit: null,
+          enable_per_process_and_thread_memory_limit: null,
+          max_file_size: null,
+          enable_network: null
+        });
+      });
+  
+    
+      const response = await fetch(`${baseURL}/submissions/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': apiHostInput,
+          'x-rapidapi-key': apiKeyInput
+        },
+        body: JSON.stringify(payloadForSubmissionBatch),
+      });
+
+      const data = await response.json();
+      const buildTokens: any[] = [];
+
+      data.forEach(async (element: any) => {
+        buildTokens.push(element.token);
+      })
+      setTimeout(async () => {
+        const response: any = await fetch(`${baseURL}/submissions/batch?tokens=${buildTokens}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-rapidapi-host': apiHostInput,
+            'x-rapidapi-key': apiKeyInput
+          },
+        });
+
+        const subResult = await response.json();
+        console.log("BATCH_RESULT",subResult);
+        // setJudge0Response(subResult);
+        // setOutputWindowSize(50);
+        // setOutput(subResult.stdout);
+        // setOutputError(subResult.stderr || subResult.message || subResult.compile_output);
+        // const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
+        // if (isErrorExist?.length > 0) {
+        //   errorRequest.messages[1].content = String(isErrorExist);
+        //   openApiChat(errorRequest);
+        // }
+        // setShowSkeleton(false);
+        // if (subResult.stdout) {
+        //   parseResponse(subResult);
+        // }
+
+      }, 3000)
+    } catch(error){
+       console
+    }
+  }
 
   const OnSubmitAsync = async (allTestCases: any) => {
     try {
@@ -326,6 +422,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
  }
 
  const getTestcasesData = async (testcase_name:any) => {
+  setBatchTestCases([]);
   testcase_name = 'sort_an_array';
   const response = await fetch(`https://socraticdsa-server.onrender.com/test_cases/problem/${testcase_name}`, {
     method: 'GET',
@@ -337,43 +434,51 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
   console.log("testcase data",data);
   if(data.length>0)
   {
-    const multistid = `${data.length}`;
-     let modifystdin ='';
-     let modifyexspteced ='';
-    let input_paramsAsString='';
-   
-    data.forEach((element:any) => {
-      
-       if(element.input_params)
-       {
-        let inputarray = element.input_params.nums;
-        input_paramsAsString = inputarray.join(" ");
-        console.log("testcase data",input_paramsAsString)
-        
-      }
-      
-     const expected_resultAsString = element.expected_result;
-       const sorted = expected_resultAsString.sort((a:any, b:any) => a - b); // For descending use: (b - a)
-       const arrayAsString = sorted.join(" ");
-      
-        modifystdin += `\n${input_paramsAsString}`;
-        modifyexspteced += `${arrayAsString}\n`;
+    let inputArray: any[] = [];
+    let outputArray: any[] = [];
+    let testCasesBatch: { input: string; output: string; }[] = [];
+
+    data.forEach((element: any) => {
+      inputArray = element.input_params.nums;
+      outputArray = element.expected_result;
+
+      // console.log("input",input);
+      // console.log("output",output);
+
+      let myResult = formatNumbers(inputArray);
+
+      let myOutput = formatNumbers(outputArray);
+  
+      // ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
+      //   testCase.expected_Result = myOutput;
+      // });
+  
+      const result = `${inputArray.length}\n${myResult}`
+      const outputwithsifix = `${myOutput}\n`;
+  
+      testCasesBatch.push({ input: result, output: outputwithsifix });
+ 
     });
-    let finalstid = `${multistid}${modifystdin}`;
-    let finalexpected = `${modifyexspteced}`;
-    
+    console.log("testCasesBatch",testCasesBatch);
+    setBatchTestCases(testCasesBatch);
 
-    // console.log("finalstid",finalstid);
-    // console.log("finalexpected",finalexpected);
 
-    handleStdinAndExpectedOutput(finalstid,finalexpected)
-    // setStdin(undefined);
-    // setExpectedOutput(undefined);
 
-    // setStdin(finalstid);
-    // setExpectedOutput(finalexpected);
+
+
+
+
+
+
+
+  
+
 
   }
+}
+
+function formatNumbers(nums: any[]) {
+  return nums.map(num => num.toString().split('').join(' ')).join('\n');
 }
 
 const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
@@ -528,6 +633,7 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
 
   const OnSelectProblem = async (problemName: string) => {
     try {
+     
       console.log("Problem name:", problemName);
       const response = await fetch(`https://socraticdsa-server.onrender.com/problems/${problemName}`, {
         method: 'GET',
@@ -557,13 +663,21 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
         prepareBoilerPlateCode += data?.end || "";
 
         editorRef.current?.setValue(prepareBoilerPlateCode);
+    
+
 
 
         problem.forEach((element: any) => {
           const input: any[] = element["custom_input"];
-          const output: any[] = element["output"];
+          const output: string = element["output"];
+          
+      console.log("input",input);
+      console.log("output",output);
 
           setTestCasesInput((prev: any) => [...prev, input]);
+
+
+ 
 
           if (input.length > 1) {
             input.forEach((item: any) => {
@@ -582,6 +696,8 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
           }
         });
 
+  
+      
 
         let myResult = processInputArray(inputArray);
 
@@ -599,6 +715,8 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
 
         setStdin(result);
         setExpectedOutput(outputwithsifix);
+
+        await getTestcasesData(problemName);
 
       }
       console.log("Problem details:", data);
@@ -734,17 +852,17 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
                     </Badge>
                   </div>
 
-                  <p className="text-muted-foreground"><em>{ProblemCaseStudy?.description}</em></p>
+                  <p className="text-muted-foreground text-sm"><em>{ProblemCaseStudy?.description}</em></p>
 
                 </div>
 
                 <div className="mt-4 space-y-4">
 
-                  <h2 className="text-xl font-bold text-foreground">Example</h2>
+                  <h2 className="text-md font-bold text-foreground">Example</h2>
 
                   {ProblemCaseStudy.examples.map((example: any, id) => (
 
-                    <div key={id} className="bg-muted p-4 rounded-md">
+                    <div key={id} className="bg-muted p-4 rounded-md text-sm">
 
                       <p className="text-muted-foreground">
 
@@ -772,11 +890,11 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
 
                 <div className="mt-4 space-y-4">
 
-                  <h2 className="text-xl font-bold text-foreground">Constraints</h2>
+                  <h2 className="text-md font-bold text-foreground">Constraints</h2>
 
                   {ProblemCaseStudy.constraints.map((constraints: any, id) => (
 
-                    <ul key={id} className="list-disc pl-6 space-y-2 text-muted-foreground">
+                    <ul key={id} className="list-disc pl-6 space-y-1 text-muted-foreground text-sm">
 
                       <li>
 

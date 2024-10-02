@@ -40,6 +40,7 @@ import { CodeBlock } from './CodeBlock';
 import ChatMenu from './ChatMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Item } from '@radix-ui/react-select';
+import { ExecException } from 'child_process';
 
 
 
@@ -50,7 +51,7 @@ type language = {
 }
 
 interface Message {
-  role: 'user' | 'system'
+  role: 'user' | 'system' | 'Assistant';
   content: string
   read: boolean
 }
@@ -239,6 +240,7 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
     try {
       const code = editorRef.current?.getValue() || '';
       const languageId = selectedLanguage?.id || '71'; 
+      payloadForSubmissionBatch.submissions = [];
       batchTestCases.forEach((testCase: any) => {
         return payloadForSubmissionBatch.submissions.push({
           source_code: editorRef.current?.getValue(),
@@ -287,6 +289,19 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
 
         const subResult = await response.json();
         console.log("BATCH_RESULT",subResult);
+        if(!areAllSubmissionsAccepted(subResult.submissions)){
+         await PostBatchErrors(subResult.submissions).then((res) => {
+          if(res != undefined)
+            {
+             errorRequest.messages[1].content = String(res);
+             openApiChat(errorRequest);
+            }
+
+         });
+       
+        }
+
+        
         // setJudge0Response(subResult);
         // setOutputWindowSize(50);
         // setOutput(subResult.stdout);
@@ -305,6 +320,14 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
     } catch(error){
        console
     }
+  }
+  function areAllSubmissionsAccepted(submissions: any[]): boolean {
+    for (let submission of submissions) {
+      if (submission.status.description !== "Accepted") {
+        return false;
+      }
+    }
+    return true;
   }
 
   const OnSubmitAsync = async (allTestCases: any) => {
@@ -438,47 +461,97 @@ function generateRandomArray(size:any, seed:any,min:any, max:any) {
     let outputArray: any[] = [];
     let testCasesBatch: { input: string; output: string; }[] = [];
 
-    data.forEach((element: any) => {
-      inputArray = element.input_params.nums;
-      outputArray = element.expected_result;
+    // data.forEach((element: any,i: number) => {
+    //   inputArray = element.input_params.nums;
+    //   outputArray = element.expected_result;
 
-      // console.log("input",input);
-      // console.log("output",output);
+    //   // console.log("input",input);
+    //    console.log("output",outputArray);
+
+    //   let myResult = formatNumbers(inputArray);
+
+    //   let myOutput = formatNumbers(outputArray);
+  
+    //   // ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
+    //   //   testCase.expected_Result = myOutput;
+    //   // });
+  
+    //   const result = `${myResult}`
+    //   const outputwithsifix = `${myOutput}`;
+  
+    //   testCasesBatch.push({ input: result, output: outputwithsifix });
+ 
+    // });
+
+    let combinedInput = '';
+    let combinedOutput = '';
+
+    data.forEach((element: any, i: number) => {
+      let inputArray = element.input_params.nums;
+      let outputArray = element.expected_result;
 
       let myResult = formatNumbers(inputArray);
-
       let myOutput = formatNumbers(outputArray);
-  
-      // ProblemCaseStudy?.examples.map((testCase: any, id: any) => {
-      //   testCase.expected_Result = myOutput;
-      // });
-  
-      const result = `${inputArray.length}\n${myResult}`
-      const outputwithsifix = `${myOutput}\n`;
-  
-      testCasesBatch.push({ input: result, output: outputwithsifix });
- 
+
+      // Accumulate results for two rows
+      combinedInput += myResult;
+      combinedOutput += myOutput;
+
+      // Push every two rows
+      if ((i + 1) % 2 === 0) {
+        combinedInput=`2\n${combinedInput}`;
+        testCasesBatch.push({ input: combinedInput.trim(), output: combinedOutput.trim() });
+        // Reset for the next two rows
+        combinedInput = '';
+        combinedOutput = '';
+      }
     });
     console.log("testCasesBatch",testCasesBatch);
     setBatchTestCases(testCasesBatch);
 
 
-
-
-
-
-
-
-
-
-  
-
-
   }
 }
 
+  async function PostBatchErrors(subResult: any) : Promise<string | undefined> {
+
+    try {
+
+      const payloadData = [
+        {
+          cpu_extra_time: null,
+          cpt_time_limit: 1,
+          memory_limit: 12000,
+          stack_limit: null,
+          wall_time_limit: null,
+          max_file_size: null
+        }
+      ];
+      const data = {
+        submissions: subResult,
+        paylod: payloadData
+      };
+
+      //setIsLoading(true);
+      const res = await axios.post('https://socraticdsa-server.onrender.com/process-submission', data);
+      if (res.data.result) {
+       return res.data.result;
+      }
+      //setIsLoading(false);
+
+    }
+    catch (error) {
+      //setIsLoading(false);
+      console.log(error);
+    }
+    return undefined;
+  }
+
 function formatNumbers(nums: any[]) {
-  return nums.map(num => num.toString().split('').join(' ')).join('\n');
+  //return nums.map(num => num.toString().split(',').join(' ')).join('\n');
+  //console.log("nums",nums);
+  return nums.join(' ')+ '\n';
+  //return nums.map(num => num.toString().split('').join(' '));
 }
 
 const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
@@ -555,6 +628,10 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
         const isErrorExist = subResult.stderr || subResult.message || subResult.compile_output;
         if (isErrorExist?.length > 0) {
           errorRequest.messages[1].content = String(isErrorExist);
+          setChatMessages(prevMessages => [
+        ...prevMessages,
+       { role: 'system', content:  errorRequest.messages[1].content, read: false }
+      ]);
           openApiChat(errorRequest);
         }
         setShowSkeleton(false);
@@ -583,21 +660,55 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
     }
   };
 
+  // const openApiChat = async (errorRequest: any) => {
+  //   try {
+  //     setIsLoading(true);
+  //     setTimeout(async () => {
+  //     const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
+  //     setIsLoading(false);
+  //     setChatMessages(prevMessages => [
+  //       ...prevMessages,
+  //       { role: 'system', content: res.data.text_output, read: false }
+  //     ]);
+  //     setTextOutput(res.data.text_output);
+  //     setassist_output(res.data.text_output);
+  //     setCodeOutput(res.data.code_output);
+  //   }, 1000)
+  //   }
+  //   catch (error) {
+  //     setIsLoading(false);
+  //     console.log(error);
+  //   }
+  // }
+
   const openApiChat = async (errorRequest: any) => {
     try {
       setIsLoading(true);
       const res = await axios.post('https://socraticdsa-server.onrender.com/openai-chat', errorRequest);
       setIsLoading(false);
+      // setChatMessages(prevMessages => [
+      //   ...prevMessages
+      //   //,
+      //  // { role: 'system', content: res.data.text_output, read: false }
+      // ]);
       setChatMessages(prevMessages => [
         ...prevMessages,
-        { role: 'system', content: res.data.text_output, read: false }
+        { role: 'Assistant', content: res.data.text_output, read: true }
       ]);
       setTextOutput(res.data.text_output);
       setCodeOutput(res.data.code_output);
+     // setAssistOutput(res.data.text_output);
     }
-    catch (error) {
+    catch (error:any) {
       setIsLoading(false);
-      console.log(error);
+      console.error('Error occurred:', error);
+      if (error.response) {
+        console.log('Server responded with:', error.response.status, error.response.data);
+      } else if (error.request) {
+        console.log('No response from server:', error.request);
+      } else {
+        console.log('Error setting up the request:', error.message);
+      }
     }
   }
 
@@ -746,9 +857,9 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
   function processExpectedOutput(arrays: any[]): string {
     let parsedArrays = arrays.map(arr => arr.replace(/[\[\]]/g, '').split(',').map(Number));
     // Replace the last element of the second array (index 1) with 5
-    if (parsedArrays[1]) {
-      parsedArrays[1][parsedArrays[1].length - 1] = 10;
-    }
+    // if (parsedArrays[1]) {
+    //   parsedArrays[1][parsedArrays[1].length - 1] = 10;
+    // }
     // return parsedArrays.map((arr: any) =>
     //   arr.replace(/[\[\],]/g, ' ').trim().replace(/\s+/g, ' ')
     // ).join('\n');
@@ -786,7 +897,7 @@ const handleStdinAndExpectedOutput = (finalstid:any,finalexpected:any) => {
       ]);
 
       // Call openApiChat when user sends a message
-      errorRequest.messages.push(...chatMessages, { role: 'user', content: inputMessage, read: true });
+      errorRequest.messages.push(...chatMessages, { role: 'user', content: inputMessage, read: true }, {role:'Assistant', content: text_output,read:true});
       openApiChat(errorRequest);
     }
   }
